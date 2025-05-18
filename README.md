@@ -116,7 +116,7 @@ The **E-Learning Platform** is a comprehensive solution designed to facilitate o
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/e-learning.git
+   git clone https://github.com/AstronDaniel/e_learning.git
    cd e-learning
    ```
 
@@ -216,7 +216,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📬 Contact
 
-Project Link: [https://github.com/yourusername/e-learning](https://github.com/yourusername/e-learning)
+Project Link: https://github.com/AstronDaniel/e_learning.git)]
 
 ---
 
