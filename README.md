@@ -54,11 +54,27 @@ The **E-Learning Platform** is a comprehensive solution designed to facilitate o
 
 ---
 
-## ✨ Key Features
+## 📷 Screenshots
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x400?text=E-Learning+Platform+Dashboard" alt="E-Learning Platform Screenshot" width="80%" />
+  <h3>Student Dashboard</h3>
+  <img src="docs/screenshots/student-dashboard.png" alt="Student Dashboard Screenshot" width="80%" />
+  <p><em>The student dashboard provides an overview of enrolled courses and progress</em></p>
+  
+  <h3>Course View</h3>
+  <img src="docs/screenshots/course-view.png" alt="Course View Screenshot" width="80%" />
+  <p><em>Detailed course view with lessons, materials and progress tracking</em></p>
+  
+  <h3>Instructor Interface</h3>
+  <img src="docs/screenshots/instructor-dashboard.png" alt="Instructor Dashboard Screenshot" width="80%" />
+  <p><em>Powerful tools for instructors to manage courses and monitor student progress</em></p>
+  
+  <h3>Quiz System</h3>
+  <img src="docs/screenshots/quiz-interface.png" alt="Quiz Interface Screenshot" width="80%" />
+  <p><em>Interactive quiz system with various question types and instant feedback</em></p>
 </div>
+
+## ✨ Key Features
 
 ### 👥 User Management
 - **Dual Role System**: Students and Instructors with tailored interfaces
@@ -165,6 +181,16 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[User Guides](docs/usage/)**: Instructions for students, instructors, and administrators
 - **[Development Documentation](docs/development/)**: Setup, architecture, and contribution guidelines
 - **[API Documentation](docs/api/)**: API reference for integrations
+- **[Deployment Guide](docs/deployment.md)**: Instructions for deploying to production
+
+## 🖼️ Adding Your Own Screenshots
+
+The placeholder screenshots in this README should be replaced with actual screenshots of your application. To add your own:
+
+1. Take screenshots of key parts of your application
+2. Save them in the `docs/screenshots/` directory
+3. Make sure they match the filenames referenced in this README, or update the image paths
+4. See [Screenshot Guidelines](docs/screenshots/README.md) for more details
 
 ---
 
