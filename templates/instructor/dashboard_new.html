@@ -1,0 +1,290 @@
+{% extends 'instructor/base.html' %}
+{% load static %}
+
+{% block title %}Instructor Dashboard | E-Learning Platform{% endblock %}
+
+{% block instructor_content %}
+    <!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Instructor Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ request.user.get_full_name|default:request.user.username }}!</p>
+        </div>
+        <div class="d-flex">
+            <a href="{% url 'courses:create' %}" class="btn btn-primary me-2">
+                <i class="fas fa-plus-circle me-2"></i>New Course
+            </a>
+            <a href="{% url 'quizzes:select_course' %}" class="btn btn-outline-primary">
+                <i class="fas fa-plus-circle me-2"></i>New Quiz
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h2 mb-0 text-center">{{ total_students|default:"0" }}</h3>
+                    <p class="text-white-50 text-center mb-0">Active Students</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-book fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h2 mb-0 text-center">{{ total_courses|default:"0" }}</h3>
+                    <p class="text-white-50 text-center mb-0">Active Courses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-question-circle fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h2 mb-0 text-center">{{ total_quizzes|default:"0" }}</h3>
+                    <p class="text-white-50 text-center mb-0">Total Quizzes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <i class="fas fa-comments fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h2 mb-0 text-center">{{ total_discussions|default:"0" }}</h3>
+                    <p class="text-white-50 text-center mb-0">Forum Discussions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Sections -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Courses Overview -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Your Courses</h5>
+                    <a href="{% url 'instructor:courses' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    {% if courses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Course</th>
+                                        <th>Students</th>
+                                        <th>Completion Rate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in courses|slice:":5" %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if course.cover_image %}
+                                                    <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="rounded me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-book text-secondary"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">{{ course.title }}</h6>
+                                                    <small class="text-muted">{{ course.student_count }} students</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ course.student_count }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ course.completion_rate|default:0 }}%"></div>
+                                                </div>
+                                                <span class="ms-2">{{ course.completion_rate|default:0|floatformat:1 }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'instructor:course_detail' course_slug=course.slug %}" class="btn btn-outline-primary">Manage</a>
+                                                <a href="{% url 'courses:detail' slug=course.slug %}" class="btn btn-outline-secondary">View</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <img src="{% static 'images/empty-courses.svg' %}" alt="No courses" class="mb-3" style="max-width: 150px;">
+                            <h5>No courses yet</h5>
+                            <p class="text-muted">Start by creating your first course</p>
+                            <a href="{% url 'courses:create' %}" class="btn btn-primary">Create Course</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quiz Performance -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Quiz Performance</h5>
+                    <a href="{% url 'instructor:quizzes' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if quiz_performance.total_attempts > 0 %}
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center mb-3 mb-md-0">
+                                <div class="display-4 fw-bold text-primary">{{ quiz_performance.avg_score|floatformat:1 }}%</div>
+                                <p class="text-muted mb-0">Average Score</p>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="fw-bold mb-3">Recent Quiz Attempts</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Quiz</th>
+                                                <th>Score</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for attempt in recent_quiz_attempts|slice:":5" %}
+                                            <tr>
+                                                <td>{{ attempt.user.get_full_name|default:attempt.user.username }}</td>
+                                                <td>{{ attempt.quiz.title }}</td>
+                                                <td>
+                                                    <span class="badge {% if attempt.score >= attempt.quiz.passing_score %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {{ attempt.score }}%
+                                                    </span>
+                                                </td>
+                                                <td>{{ attempt.completed_at|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <h5>No quiz attempts yet</h5>
+                            <p class="text-muted">Student performance data will appear here once students take your quizzes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Recent Activity -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_enrollments or recent_discussions %}
+                        <div class="activity-timeline">
+                            {% for enrollment in recent_enrollments|slice:":3" %}
+                                <div class="activity-item mb-3 ps-3 border-start border-primary">
+                                    <h6 class="mb-1">New Enrollment</h6>
+                                    <p class="mb-1">{{ enrollment.user.get_full_name|default:enrollment.user.username }} enrolled in {{ enrollment.course.title }}</p>
+                                    <div class="small text-muted">{{ enrollment.date_enrolled|timesince }} ago</div>
+                                </div>
+                            {% endfor %}
+                            
+                            {% for discussion in recent_discussions|slice:":3" %}
+                                <div class="activity-item mb-3 ps-3 border-start border-success">
+                                    <h6 class="mb-1">New Discussion</h6>
+                                    <p class="mb-1">{{ discussion.user.get_full_name|default:discussion.user.username }} posted in {{ discussion.course.title }}</p>
+                                    <div class="small text-muted">{{ discussion.date_posted|timesince }} ago</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent activity to display</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'courses:create' %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="text-primary me-3"><i class="fas fa-plus-circle fa-lg"></i></div>
+                            <div>
+                                <h6 class="mb-0">Create New Course</h6>
+                                <small class="text-muted">Add a new course to your teaching portfolio</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'quizzes:select_course' %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="text-warning me-3"><i class="fas fa-question-circle fa-lg"></i></div>
+                            <div>
+                                <h6 class="mb-0">Create New Quiz</h6>
+                                <small class="text-muted">Add assessments to your courses</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'instructor:analytics' %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="text-info me-3"><i class="fas fa-chart-bar fa-lg"></i></div>
+                            <div>
+                                <h6 class="mb-0">View Analytics</h6>
+                                <small class="text-muted">Get insights into student performance</small>
+                            </div>
+                        </a>
+                        <a href="{% url 'instructor:forums' %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="text-success me-3"><i class="fas fa-comments fa-lg"></i></div>
+                            <div>
+                                <h6 class="mb-0">Manage Forums</h6>
+                                <small class="text-muted">Moderate discussions in your courses</small>
+                            </div>
+                        </a>
+                        {% if courses.exists %}
+                        <a href="{% url 'instructor:students' course_slug=courses.first.slug %}" class="list-group-item list-group-item-action d-flex align-items-center">
+                            <div class="text-secondary me-3"><i class="fas fa-user-graduate fa-lg"></i></div>
+                            <div>
+                                <h6 class="mb-0">Manage Students</h6>
+                                <small class="text-muted">View and manage your students</small>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize charts and other JS functionality here
+    document.addEventListener('DOMContentLoaded', function() {
+        // You can add Chart.js initialization code here if needed
+    });
+</script>
+{% endblock %}

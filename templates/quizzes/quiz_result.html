@@ -1,0 +1,437 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quiz Results | {{ quiz.title }} | Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-card {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .results-header {
+        background: linear-gradient(90deg, rgba(25, 25, 65, 0.9), rgba(40, 40, 80, 0.9)), 
+                    url('{% if course.image %}{{ course.image.url }}{% else %}https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80{% endif %}');
+        background-size: cover;
+        background-position: center;
+        padding: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .results-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI5NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHg9IjAiIHk9IjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDQwTDQwIDBNMCAwTDQwIDQwIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');
+        opacity: 0.4;
+        z-index: 0;
+    }
+    
+    .result-pill {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .result-pill i {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .score-circle {
+        position: relative;
+        width: 160px;
+        height: 160px;
+    }
+    
+    .score-svg circle {
+        fill: none;
+        stroke-width: 10;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+    
+    .score-bg {
+        stroke: rgba(255, 255, 255, 0.1);
+    }
+    
+    .score-progress {
+        stroke: var(--secondary-color);
+        transition: stroke-dashoffset 1s ease-in-out;
+    }
+    
+    .score-progress.fail {
+        stroke: #dc3545;
+    }
+    
+    .score-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    
+    .score-percentage {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+    
+    .score-label {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+    
+    .question-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .question-item.correct {
+        border-left: 4px solid #198754;
+    }
+    
+    .question-item.incorrect {
+        border-left: 4px solid #dc3545;
+    }
+    
+    .question-item.unanswered {
+        border-left: 4px solid #6c757d;
+    }
+    
+    .question-header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .question-status {
+        margin-right: 1rem;
+        font-size: 1.5rem;
+        line-height: 1;
+    }
+    
+    .question-status.correct {
+        color: #198754;
+    }
+    
+    .question-status.incorrect {
+        color: #dc3545;
+    }
+    
+    .question-status.unanswered {
+        color: #6c757d;
+    }
+    
+    .choice-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .choice-item.selected {
+        background: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+    }
+    
+    .choice-item.correct {
+        background: rgba(25, 135, 84, 0.1);
+        border-color: #198754;
+    }
+    
+    .choice-item.incorrect {
+        background: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+    }
+    
+    .choice-indicator {
+        margin-right: 1rem;
+        font-size: 1rem;
+    }
+    
+    .stats-card {
+        padding: 1rem;
+        height: 100%;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .stats-card i {
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-card .stats-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .stats-card.correct i, .stats-card.correct .stats-value {
+        color: #198754;
+    }
+    
+    .stats-card.incorrect i, .stats-card.incorrect .stats-value {
+        color: #dc3545;
+    }
+    
+    .stats-card.unanswered i, .stats-card.unanswered .stats-value {
+        color: #6c757d;
+    }
+    
+    .certificate-btn {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .certificate-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(13, 232, 236, 0.2), rgba(13, 232, 236, 0), rgba(13, 232, 236, 0.2));
+        z-index: -1;
+        animation: shine 2s infinite;
+    }
+    
+    @keyframes shine {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Results Header -->
+<section class="results-header">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.slug %}" class="text-white-50">{{ course.title }}</a></li>
+                        {% if lesson %}
+                        <li class="breadcrumb-item"><a href="{% url 'courses:lesson' course.slug lesson.id %}" class="text-white-50">{{ lesson.title }}</a></li>
+                        {% endif %}
+                        <li class="breadcrumb-item"><a href="{% url 'quizzes:detail' quiz.id %}" class="text-white-50">{{ quiz.title }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Results</li>
+                    </ol>
+                </nav>
+                
+                <h1 class="mb-3 display-5">Quiz Results</h1>
+                <div class="d-flex flex-wrap mb-4">
+                    <div class="result-pill">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div>
+                            <div class="small text-white-50">Completed On</div>
+                            <div>{{ attempt.completed_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-pill">
+                        <i class="fas {% if attempt.passed %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                        <div>
+                            <div class="small text-white-50">Status</div>
+                            <div>{% if attempt.passed %}Passed{% else %}Failed{% endif %}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-pill">
+                        <i class="fas fa-trophy"></i>
+                        <div>
+                            <div class="small text-white-50">Required to Pass</div>
+                            <div>{{ quiz.pass_score }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 text-center">
+                <div class="score-circle mx-auto">
+                    <svg class="score-svg" width="160" height="160" viewBox="0 0 160 160">
+                        <circle class="score-bg" cx="80" cy="80" r="70"/>
+                        <circle class="score-progress {% if not attempt.passed %}fail{% endif %}" 
+                                cx="80" cy="80" r="70" 
+                                stroke-dasharray="439.8" 
+                                stroke-dashoffset="{{ attempt.score|floatformat:0|mul:4.398|sub:439.8|abs }}" />
+                    </svg>
+                    <div class="score-text">
+                        <div class="score-percentage">{{ attempt.score|floatformat:1 }}%</div>
+                        <div class="score-label">Your Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quiz Results Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <!-- Statistics -->
+                <div class="results-card p-4 mb-4" data-aos="fade-up">
+                    <h4 class="mb-4">Performance Summary</h4>
+                    
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="stats-card correct">
+                                <i class="fas fa-check-circle"></i>
+                                <div class="stats-value">{{ correct_answers }}</div>
+                                <div class="small">Correct Answers</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="stats-card incorrect">
+                                <i class="fas fa-times-circle"></i>
+                                <div class="stats-value">{{ incorrect_answers }}</div>
+                                <div class="small">Incorrect Answers</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="stats-card unanswered">
+                                <i class="fas fa-question-circle"></i>
+                                <div class="stats-value">{{ unanswered }}</div>
+                                <div class="small">Unanswered Questions</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'quizzes:detail' quiz.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-angle-left me-2"></i> Back to Quiz Details
+                        </a>
+                        
+                        {% if attempt.passed and quiz.certificate_enabled %}
+                        <a href="{% url 'quizzes:certificate' quiz.id attempt.id %}" class="btn btn-secondary certificate-btn">
+                            <i class="fas fa-award me-2"></i> View Certificate
+                        </a>
+                        {% else %}
+                        <a href="{% url 'quizzes:start' quiz.id %}" class="btn btn-secondary">
+                            <i class="fas fa-redo me-2"></i> Retry Quiz
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Detailed Question Review -->
+                {% if show_answers %}
+                <div class="results-card p-4" data-aos="fade-up" data-aos-delay="100">
+                    <h4 class="mb-4">Question Review</h4>
+                    
+                    {% for question in questions %}
+                        {% with answer=question_answers|get:question.id %}
+                        <div class="question-item {% if answer.is_correct %}correct{% elif answer.is_correct == False %}incorrect{% else %}unanswered{% endif %}">
+                            <div class="question-header">
+                                <div class="question-status {% if answer.is_correct %}correct{% elif answer.is_correct == False %}incorrect{% else %}unanswered{% endif %}">
+                                    {% if answer.is_correct %}
+                                        <i class="fas fa-check-circle"></i>
+                                    {% elif answer.is_correct == False %}
+                                        <i class="fas fa-times-circle"></i>
+                                    {% else %}
+                                        <i class="fas fa-question-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">Question {{ forloop.counter }}</h5>
+                                    <div class="text-white-50 small">{{ question.points }} {% if question.points == 1 %}point{% else %}points{% endif %}</div>
+                                </div>
+                            </div>
+                            
+                            <div class="question-text mb-3">
+                                {{ question.text }}
+                            </div>
+                            
+                            {% if question.question_type in 'multiple_choice,true_false' %}
+                                {% for choice in question.choices.all %}
+                                <div class="choice-item 
+                                    {% if choice in answer.selected_choices.all %}selected{% endif %}
+                                    {% if choice.is_correct and choice in answer.selected_choices.all %}correct{% endif %}
+                                    {% if not choice.is_correct and choice in answer.selected_choices.all %}incorrect{% endif %}">
+                                    <div class="choice-indicator">
+                                        {% if choice.is_correct %}
+                                            <i class="fas fa-check-circle"></i>
+                                        {% elif choice in answer.selected_choices.all %}
+                                            <i class="fas fa-times-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div>{{ choice.text }}</div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="p-3 bg-dark rounded mb-3">
+                                    <div class="small text-white-50 mb-1">Your Answer:</div>
+                                    <div>{{ answer.text_answer|default:"No answer provided" }}</div>
+                                </div>
+                                
+                                {% if question.question_type == 'short_answer' and show_answers %}
+                                    <div class="p-3 bg-dark rounded mb-3">
+                                        <div class="small text-white-50 mb-1">Correct Answer:</div>
+                                        <div>
+                                            {% for choice in question.choices.all %}
+                                                {% if choice.is_correct %}{{ choice.text }}{% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if question.explanation %}
+                                <div class="mt-3 p-3 bg-dark rounded">
+                                    <div class="small text-white-50 mb-1">Explanation:</div>
+                                    <div>{{ question.explanation }}</div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="results-card p-4 text-center" data-aos="fade-up" data-aos-delay="100">
+                    <div class="py-4">
+                        <i class="fas fa-lock display-1 text-white-50 mb-4"></i>
+                        <h4 class="mb-3">Answer Reviewing Disabled</h4>
+                        <p>The instructor has disabled answer reviewing for this quiz.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

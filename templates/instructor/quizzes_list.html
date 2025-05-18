@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Quizzes | E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Instructor Sidebar -->
+        <div class="col-lg-2 bg-dark text-white px-0 border-end">
+            <div class="d-flex flex-column min-vh-100 p-3">
+                <h5 class="my-3 text-center" style="color: var(--primary-color);">Instructor Dashboard</h5>
+                <hr class="text-white-50">
+                
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'dashboard' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-home me-2" style="color: var(--primary-color);"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:courses' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'courses' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'courses' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-book me-2" style="color: var(--primary-color);"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:quizzes' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'quizzes' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'quizzes' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-question-circle me-2" style="color: var(--primary-color);"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:analytics' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'analytics' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--primary-color);"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:forums' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'forums' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'forums' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-comments me-2" style="color: var(--primary-color);"></i>
+                            Forums
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <div class="mt-auto text-center">
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Site
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-lg-10 ms-auto p-0">
+            <div class="content-wrapper p-4">
+
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-1">Quiz Management</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'instructor:dashboard' %}" style="color: var(--primary-color);">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Quizzes</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a href="{% url 'quizzes:select_course' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i> Create New Quiz
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quizzes by Course -->
+                {% if courses_with_quizzes %}
+                    {% for course_data in courses_with_quizzes %}
+                        <div class="card border-0 shadow-sm mb-4">
+                            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-book me-2" style="color: var(--primary-color);"></i>
+                                    {{ course_data.course.title }}
+                                </h5>                                <a href="{% url 'quizzes:create' course_slug=course_data.course.slug %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-plus-circle me-1"></i> Add Quiz
+                                </a>
+                            </div>
+                            <div class="card-body p-0">
+                                {% if course_data.quizzes %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th class="ps-3">Quiz</th>
+                                                    <th>Questions</th>
+                                                    <th>Attempts</th>
+                                                    <th>Avg Score</th>
+                                                    <th>Pass Rate</th>
+                                                    <th>Status</th>
+                                                    <th class="text-end pe-3">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for quiz in course_data.quizzes %}
+                                                    <tr>
+                                                        <td class="ps-3">
+                                                            <div class="d-flex align-items-center">
+                                                                <div class="me-3">
+                                                                    <div class="rounded-circle p-2" style="background-color: rgba(255, 140, 0, 0.1);">
+                                                                        <i class="fas fa-question-circle text-primary"></i>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <h6 class="mb-0 text-dark">{{ quiz.title }}</h6>
+                                                                    <small class="text-dark">{{ quiz.description|truncatechars:60 }}</small>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge" style="background-color: var(--primary-color);">{{ quiz.questions.count }}</span>
+                                                        </td>
+                                                        <td>
+                                                            <span class="badge bg-secondary">{{ quiz.attempt_count|default:"0" }}</span>
+                                                        </td>
+                                                        <td>
+                                                            {% if quiz.avg_score %}
+                                                                <span class="badge" style="background-color: var(--secondary-color);">{{ quiz.avg_score|floatformat:1 }}%</span>
+                                                            {% else %}
+                                                                <span class="badge bg-light text-dark">No attempts</span>
+                                                            {% endif %}
+                                                        </td>                                                        <td>
+                                                            {% if quiz.attempt_count %}
+                                                                {% with pass_rate=quiz.passing_rate|default:0 %}
+                                                                    <div class="progress" style="height: 8px; width: 80px;">
+                                                                        <div class="progress-bar" role="progressbar" style="width: {{ pass_rate }}%; background-color: {% if pass_rate >= 70 %}var(--primary-color){% elif pass_rate >= 50 %}var(--secondary-color){% else %}var(--dark-color){% endif %};" aria-valuenow="{{ pass_rate }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                                                    </div>
+                                                                    <small class="text-dark">{{ pass_rate|floatformat }}%</small>
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                <small class="text-dark">No data</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>
+                                                            {% if quiz.is_active %}
+                                                                <span class="badge" style="background-color: var(--primary-color);">Active</span>
+                                                            {% else %}
+                                                                <span class="badge bg-secondary">Inactive</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-end pe-3">
+                                                            <div class="btn-group btn-group-sm">
+                                                                <a href="{% url 'instructor:quiz_results' quiz_id=quiz.id %}" class="btn btn-outline-primary">
+                                                                    <i class="fas fa-chart-bar"></i>
+                                                                </a>
+                                                                <a href="{% url 'quizzes:edit' quiz_id=quiz.id %}" class="btn btn-outline-primary">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                                <a href="#" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteQuizModal{{ quiz.id }}">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </a>
+                                                            </div>
+                                                            
+                                                            <!-- Delete Quiz Modal -->
+                                                            <div class="modal fade" id="deleteQuizModal{{ quiz.id }}" tabindex="-1" aria-hidden="true">
+                                                                <div class="modal-dialog">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header">
+                                                                            <h5 class="modal-title" style="color: var(--primary-color);">Delete Quiz</h5>
+                                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <p class="text-dark">Are you sure you want to delete the quiz "<strong>{{ quiz.title }}</strong>"?</p>
+                                                                            <p class="text-danger">This will permanently delete all questions and student attempt data for this quiz.</p>
+                                                                        </div>
+                                                                        <div class="modal-footer">
+                                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                                            <form action="{% url 'quizzes:delete' quiz_id=quiz.id %}" method="post" style="display: inline;">
+                                                                                {% csrf_token %}
+                                                                                <button type="submit" class="btn btn-danger">Delete Permanently</button>
+                                                                            </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <div class="text-center py-5">
+                                        <div class="mb-3">
+                                            <i class="fas fa-question-circle fa-3x" style="color: var(--primary-color);"></i>
+                                        </div>                                        <h5 class="mb-2 text-dark">No quizzes yet</h5>
+                                        <p class="text-dark mb-4">Create your first quiz for this course.</p>
+                                        <a href="{% url 'quizzes:create' course_slug=course_data.course.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-1"></i> Create Quiz
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <div class="mb-4">
+                                <i class="fas fa-book fa-4x" style="color: var(--primary-color);"></i>
+                            </div>
+                            <h4 class="mb-3 text-dark">No Courses Found</h4>
+                            <p class="text-dark">You haven't created any courses yet.</p>
+                            <a href="{% url 'courses:create' %}" class="btn btn-primary mt-2">
+                                <i class="fas fa-plus-circle me-1"></i> Create Your First Course
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

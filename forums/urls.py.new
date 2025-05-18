@@ -1,0 +1,29 @@
+from django.urls import path
+from . import views
+
+app_name = 'forums'
+
+urlpatterns = [
+    # Course discussions
+    path('<slug:course_slug>/discussions/', views.course_discussions, name='course_discussions'),
+    path('<slug:course_slug>/discussions/create/', views.create_discussion, name='create_discussion'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/', views.discussion_detail, name='discussion_detail'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/edit/', views.edit_discussion, name='edit_discussion'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/delete/', views.delete_discussion, name='delete_discussion'),
+    
+    # Discussion actions
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/toggle-closed/', views.toggle_closed, name='toggle_closed'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/toggle-pinned/', views.toggle_pinned, name='toggle_pinned'),
+    
+    # Reply actions
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/reply/<int:reply_id>/edit/', views.edit_reply, name='edit_reply'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/reply/<int:reply_id>/delete/', views.delete_reply, name='delete_reply'),
+    path('<slug:course_slug>/discussions/<slug:discussion_slug>/reply/<int:reply_id>/mark-solution/', views.mark_solution, name='mark_solution'),
+    
+    # Notifications
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark_notification_read'),
+    
+    # Tags
+    path('tags/create/', views.create_tag, name='create_tag'),
+]

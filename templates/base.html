@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NeonLearn - Modern E-Learning{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts - Modern neon-inspired typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- AOS - Animate On Scroll Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/neon-additions.css' %}">
+    
+    <!-- Custom Theme Colors Overrides -->
+    <style>
+        :root {
+            --bs-primary: var(--primary-color);
+            --bs-secondary: var(--secondary-color);
+        }
+        
+        /* Dark theme scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--background-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--background-light);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+    
+</head>
+<body>
+    <!-- Navigation - Modern Glassmorphism Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                <span class="fw-bold neon-text">Neon<span class="neon-text-pink">Learn</span></span>
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>                    <li class="nav-item">
+                        <a class="nav-link {% if 'courses' in request.path %}active{% endif %}" href="{% url 'courses:list' %}">
+                            <i class="fas fa-graduation-cap me-1"></i> Courses
+                        </a>
+                    </li>                    <li class="nav-item">
+                        <a class="nav-link {% if 'forums' in request.path %}active{% endif %}" href="{% url 'forums:list' %}">
+                            <i class="fas fa-comments me-1"></i> Forums
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <form class="d-flex me-3" action="{% url 'search' %}" method="get">
+                        <div class="search-wrapper position-relative">
+                            <input class="form-control ps-4 pe-5" type="search" name="q" placeholder="Search courses..." aria-label="Search">
+                            <button class="btn position-absolute end-0 top-0 bottom-0 text-light" type="submit" style="background: transparent;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    {% if user.is_authenticated %}
+                        <div class="dropdown">
+                            <a class="btn btn-light dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown" style="background-color: var(--background-card); border-color: var(--border-color);">
+                                <li><a class="dropdown-item text-light" href="{% url 'users:profile' %}">
+                                    <i class="fas fa-user me-2"></i> My Profile
+                                </a></li>
+                                <li><a class="dropdown-item text-light" href="{% url 'users:dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                                </a></li>
+                                {% if user.profile.is_instructor %}
+                                <li><a class="dropdown-item text-light" href="{% url 'courses:my_courses' %}">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i> My Courses
+                                </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider" style="border-color: var(--border-color);"></li>
+                                <li><a class="dropdown-item text-light" href="{% url 'users:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                        <a href="{% url 'users:register' %}" class="btn btn-secondary">
+                            <i class="fas fa-user-plus me-1"></i> Register
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages/Alerts with neon styling -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="py-4">
+        {% block content %}{% endblock %}
+    </main>    <!-- Footer with Neon Styling -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-4 mb-5 mb-lg-0">
+                    <h3 class="footer-title neon-text">Neon<span class="neon-text-pink">Learn</span></h3>
+                    <p class="mb-4">Transform your future with cutting-edge courses designed for the digital age. Learn, grow, and succeed with our immersive educational experience.</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                  <div class="col-6 col-lg-3 mb-5 mb-lg-0">
+                    <h4 class="footer-title">Academics</h4>
+                    <a href="{% url 'courses:list' %}" class="footer-link">Courses</a>
+                    {% comment %} <a href="{% url 'quizzes:list' %}" class="footer-link">Quizzes</a> {% endcomment %}
+                    <a href="#" class="footer-link">Resources</a>
+                    <a href="#" class="footer-link">Academic Calendar</a>
+                </div>                  <div class="col-6 col-lg-3 mb-5 mb-lg-0">
+                    <h4 class="footer-title">Community</h4>
+                    <a href="{% url 'forums:list' %}" class="footer-link">Forums</a>
+                    <a href="#" class="footer-link">Student Portal</a>
+                    <a href="#" class="footer-link">Faculty Directory</a>
+                </div>
+                
+                <div class="col-6 col-lg-2 mb-5 mb-lg-0">
+                    <h4 class="footer-title">Support</h4>
+                    <a href="#" class="footer-link">Help Desk</a>
+                    <a href="#" class="footer-link">Contact</a>
+                    <a href="#" class="footer-link">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom py-4 border-top" style="border-color: var(--border-color) !important;">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="mb-0 small">© {% now "Y" %} NeonLearn. All rights reserved.</p>
+                    </div>                    <div class="col-md-6 text-center text-md-end">
+                        <p class="mb-0 small text-muted">
+                            <i class="fas fa-code me-2 text-secondary"></i> Created by <span class="text-light">Sempala Daniel</span> <i class="fas fa-graduation-cap mx-1 text-tertiary"></i> for university students
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+      <!-- Vanilla Tilt.js for 3D card effects -->
+    <script src="https://unpkg.com/vanilla-tilt@1.7.0/dist/vanilla-tilt.min.js"></script>
+      <!-- AOS - Animate On Scroll -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Custom animations and effects -->
+    <script src="{% static 'js/animations.js' %}"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

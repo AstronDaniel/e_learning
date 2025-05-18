@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}NeonLearn - Modern E-Learning Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Neon Effects -->
+<section class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="container">
+        <div class="hero-content" data-aos="fade-up">            <h1 class="hero-title">Academic <span class="highlight">Excellence.</span> Digital Innovation.</h1>
+            <p class="hero-subtitle">Discover comprehensive courses taught by university faculty and academic experts. Enhance your academic journey with our innovative learning platform.</p>
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3 mt-5">
+                <a href="{% url 'courses:list' %}" class="btn btn-secondary btn-lg btn-glow">
+                    <i class="fas fa-rocket me-2"></i> Explore Courses
+                </a>
+                <a href="{% url 'users:register' %}" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-user-plus me-2"></i> Start Your Journey
+                </a>
+            </div>
+            
+            <div class="mt-5 pt-4">
+                <div class="d-flex flex-wrap justify-content-center align-items-center gap-4">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <i class="fas fa-check-circle neon-text" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <span>Lifetime Access</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <i class="fas fa-check-circle neon-text-pink" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <span>Expert Instructors</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <i class="fas fa-check-circle neon-text" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <span>Completion Certificates</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section with Neon Design -->
+<section class="py-6">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="section-title neon-text position-relative d-inline-block" data-aos="fade-up">
+                    Why Choose <span class="neon-text-pink">NeonLearn</span>
+                    <div class="position-absolute start-0 end-0 bottom-0" style="height: 1px; background: linear-gradient(90deg, transparent, var(--secondary-color), var(--tertiary-color), transparent);"></div>
+                </h2>
+            </div>
+        </div>
+        <div class="row g-4">            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="feature-card position-relative p-5 h-100">
+                    <!-- Animated border glow effect -->
+                    <div class="animated-border"></div>
+                    
+                    <div class="text-center">
+                        <div class="feature-icon-wrapper mb-4">
+                            <div class="feature-icon-bg"></div>
+                            <i class="fas fa-graduation-cap feature-icon neon-text" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Course Enrollment</h4>
+                        <p>Access to a wide range of academic courses with organized lessons, syllabus tracking and progress monitoring.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="feature-card position-relative p-5 h-100">
+                    <!-- Animated border glow effect -->
+                    <div class="animated-border"></div>
+                    
+                    <div class="text-center">
+                        <div class="feature-icon-wrapper mb-4">
+                            <div class="feature-icon-bg"></div>
+                            <i class="fas fa-comments feature-icon neon-text-pink" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Discussion Forums</h4>
+                        <p>Engage in course-specific academic discussions with instructors and fellow students to enhance understanding.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="feature-card position-relative p-5 h-100">
+                    <!-- Animated border glow effect -->
+                    <div class="animated-border"></div>
+                    
+                    <div class="text-center">
+                        <div class="feature-icon-wrapper mb-4">
+                            <div class="feature-icon-bg"></div>
+                            <i class="fas fa-tasks feature-icon neon-text" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">Assignments & Quizzes</h4>
+                        <p>Complete course assignments and take automatically graded quizzes to test your knowledge and track your academic progress.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Courses Section with Neon Cards -->
+<section class="courses-section py-6 position-relative">
+    <!-- Background elements -->
+    <div class="position-absolute top-0 start-0 end-0 bottom-0 overflow-hidden" style="z-index: 0;">
+        <div class="position-absolute" style="width: 300px; height: 300px; border-radius: 50%; background: rgba(110, 43, 243, 0.07); filter: blur(80px); top: 10%; left: 5%;"></div>
+        <div class="position-absolute" style="width: 250px; height: 250px; border-radius: 50%; background: rgba(13, 232, 236, 0.07); filter: blur(80px); top: 40%; right: 10%;"></div>
+        <div class="position-absolute" style="width: 200px; height: 200px; border-radius: 50%; background: rgba(255, 0, 153, 0.05); filter: blur(60px); bottom: 15%; left: 30%;"></div>
+    </div>
+
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row mb-5">
+            <div class="col-md-7" data-aos="fade-right">
+                <h2 class="section-title neon-text position-relative d-inline-block">
+                    Featured <span class="neon-text-pink">Courses</span>
+                    <div class="position-absolute start-0 end-0 bottom-0" style="height: 1px; background: linear-gradient(90deg, transparent, var(--secondary-color), var(--tertiary-color), transparent);"></div>
+                </h2>
+                <p class="text-secondary mt-3">Explore our most popular and cutting-edge learning experiences</p>
+            </div>
+            <div class="col-md-5 text-md-end d-flex align-items-center justify-content-md-end" data-aos="fade-left">
+                <a href="{% url 'courses:list' %}" class="btn btn-outline-secondary">
+                    Explore All Courses <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Placeholder course cards with neon styling -->            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="course-card card h-100">
+                    <div class="position-relative">
+                        <div class="card-img-wrapper overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="Web Development Course">
+                        </div>
+                        <div class="image-overlay"></div>
+                        <span class="course-level badge bg-primary position-absolute" style="top: 15px; right: 15px;">Beginner</span>
+                    </div>
+                    <div class="card-body">                <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">Development</span>
+                            <span class="badge bg-secondary px-3 py-2 rounded-pill">Advanced</span>
+                        </div>
+                        <h5 class="card-title">Modern Web Development with React</h5>
+                        <p class="card-text">Master React.js and build interactive, responsive web applications with modern best practices.</p>
+                        <div class="mt-3 progress course-progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <small>Alex Johnson</small>
+                        </div>
+                        <small><i class="fas fa-users me-1 text-secondary"></i> 324</small>
+                    </div>
+                </div>
+            </div>
+              <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="course-card card h-100">
+                    <div class="position-relative">
+                        <div class="card-img-wrapper overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="Machine Learning Course">
+                        </div>
+                        <div class="image-overlay"></div>
+                        <span class="course-level badge bg-tertiary position-absolute" style="top: 15px; right: 15px;">Advanced</span>
+                    </div>
+                    <div class="card-body">                <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">AI & ML</span>
+                            <span class="badge bg-tertiary px-3 py-2 rounded-pill">Graduate</span>
+                        </div>
+                        <h5 class="card-title">Machine Learning with Python</h5>
+                        <p class="card-text">Learn machine learning algorithms, neural networks, and practical applications with Python.</p>
+                        <div class="mt-3 progress course-progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <small>Sophia Chen</small>
+                        </div>
+                        <small><i class="fas fa-users me-1 text-secondary"></i> 612</small>
+                    </div>
+                </div>
+            </div>
+              <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="course-card card h-100">
+                    <div class="position-relative">
+                        <div class="card-img-wrapper overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1561070791-2526d30994b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top" alt="UI/UX Design Course">
+                        </div>
+                        <div class="image-overlay"></div>
+                        <span class="course-level badge bg-secondary position-absolute" style="top: 15px; right: 15px;">Intermediate</span>
+                    </div>
+                    <div class="card-body">                <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">Design</span>
+                            <span class="badge bg-success px-3 py-2 rounded-pill">Undergraduate</span>
+                        </div>
+                        <h5 class="card-title">UI/UX Design Fundamentals</h5>
+                        <p class="card-text">Master user interface and experience design principles to create intuitive, beautiful products.</p>
+                        <div class="mt-3 progress course-progress">
+                            <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user text-primary"></i>
+                            </div>
+                            <small>Michael Torres</small>
+                        </div>
+                        <small><i class="fas fa-users me-1 text-secondary"></i> 487</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section with Neon Effects -->
+<section class="stats-section py-6">
+    <!-- Animated grid background -->
+    <div class="position-absolute top-0 start-0 end-0 bottom-0 stats-grid"></div>
+    
+    <div class="container position-relative">
+        <div class="row text-center g-4">
+            <div class="col-md-4" data-aos="fade-up">
+                <div class="stat-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                    <div class="stat-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
+                    <div class="stat-value counter-value" data-count="{{ total_courses|default:'0' }}">0</div>
+                    <div class="stat-label">COURSES AVAILABLE</div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, var(--tertiary-color), var(--primary-color));">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value counter-value" data-count="{{ total_students|default:'0' }}">0</div>
+                    <div class="stat-label">ACTIVE STUDENTS</div>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-card" data-tilt data-tilt-max="10" data-tilt-speed="400" data-tilt-glare data-tilt-max-glare="0.3">
+                    <div class="stat-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <div class="stat-value counter-value" data-count="{{ total_certificates|default:'0' }}">0</div>
+                    <div class="stat-label">CERTIFICATES EARNED</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action with Neon Effect -->
+<section class="cta-section py-6 position-relative">
+    <!-- Background elements -->
+    <div class="cta-bg"></div>
+    
+    <!-- Floating elements animation -->
+    <div class="floating-elements">
+        <div class="floating-element" style="--x: -30%; --y: 20%; --delay: 0s;"></div>
+        <div class="floating-element" style="--x: 20%; --y: -20%; --delay: 2s;"></div>
+        <div class="floating-element" style="--x: -20%; --y: -30%; --delay: 4s;"></div>
+        <div class="floating-element" style="--x: 30%; --y: 30%; --delay: 6s;"></div>
+    </div>
+    
+    <div class="container position-relative">
+        <div class="row justify-content-center">
+            <div class="col-lg-10" data-aos="fade-up">                <div class="cta-card p-5 text-center">
+                    <div class="glowing-border"></div>
+                    <h2 class="display-5 fw-bold mb-4">
+                        Enhance Your <span class="neon-text">Academic</span> Journey
+                    </h2>
+                    <p class="lead mb-5">Join your fellow students in our university's digital learning environment. Access course materials, participate in academic discussions, and track your progress throughout the semester.</p>
+                    <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                        <a href="{% url 'users:register' %}" class="btn btn-secondary btn-lg btn-glow">
+                            <i class="fas fa-graduation-cap me-2"></i> Register for Classes
+                        </a>
+                        <a href="{% url 'courses:list' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-book me-2"></i> Browse Course Catalog
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

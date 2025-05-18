@@ -1,0 +1,445 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Question | {{ quiz.title }} | E-Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Override any problematic styles from the base template */
+    body {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+    
+    .container {
+        background-color: transparent !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, label, small, .text-dark {
+        color: #212529 !important;
+    }
+    
+    .card {
+        background-color: #ffffff !important;
+        border-color: #e9ecef !important;
+    }
+    
+    .btn-primary {
+        background-color: #ff8c00 !important;
+        border-color: #ff8c00 !important;
+    }
+    
+    .btn-outline-secondary {
+        color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+    
+    .form-control, .form-select {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border-color: #ced4da !important;
+    }
+    
+    .card-header {
+        background-color: #ffffff !important;
+    }
+    
+    .text-primary {
+        color: #ff8c00 !important;
+    }
+    
+    .choice-item {
+        border-left: 4px solid #e9ecef;
+        padding-left: 15px;
+        margin-bottom: 15px;
+        transition: all 0.2s;
+    }
+    
+    .choice-item.is-correct {
+        border-left-color: #28a745;
+        background-color: rgba(40, 167, 69, 0.05);
+    }
+    
+    .question-list-item {
+        border-left: 4px solid #e9ecef;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    
+    .question-list-item:hover {
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    
+    #choicesContainer {
+        margin-top: 10px;
+    }
+    
+    .add-choice-btn {
+        margin-top: 10px;
+    }
+    
+    .choice-actions {
+        display: flex;
+        align-items: center;
+    }
+    
+    .correct-toggle {
+        margin-right: 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .badge-mc {
+        background-color: #6f42c1;
+        color: white;
+    }
+    
+    .badge-tf {
+        background-color: #fd7e14;
+        color: white;
+    }
+    
+    .badge-sa {
+        background-color: #20c997;
+        color: white;
+    }
+    
+    .question-controls {
+        visibility: hidden;
+    }
+    
+    .question-list-item:hover .question-controls {
+        visibility: visible;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header with Navigation -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Add Questions to Quiz</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'instructor:dashboard' %}" class="text-dark">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'instructor:quizzes' %}" class="text-dark">Quizzes</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'quizzes:detail' quiz_id=quiz.id %}" class="text-dark">{{ quiz.title }}</a></li>
+                            <li class="breadcrumb-item active">Add Question</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{% url 'quizzes:detail' quiz_id=quiz.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Quiz
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Add Question Form -->
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-question-circle text-primary me-2"></i>New Question
+                            </h5>
+                            <span class="badge bg-primary">{{ quiz.questions.count|add:"1" }}</span>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="post" id="questionForm">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="question_text" class="form-label">Question Text *</label>
+                                    <textarea class="form-control text-dark" id="question_text" name="question_text" rows="3" required></textarea>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="question_type" class="form-label">Question Type *</label>
+                                        <select class="form-select text-dark" id="question_type" name="question_type" required>
+                                            <option value="multiple_choice">Multiple Choice</option>
+                                            <option value="true_false">True/False</option>
+                                            <option value="short_answer">Short Answer</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="points" class="form-label">Points</label>
+                                        <input type="number" class="form-control text-dark" id="points" name="points" min="1" value="1" step="1">
+                                    </div>
+                                </div>
+                                
+                                <!-- Multiple Choice/True-False Options -->
+                                <div id="choicesSection">
+                                    <hr class="my-4">
+                                    <h6 class="mb-3">Answer Choices</h6>
+                                    
+                                    <div id="choicesContainer">
+                                        <!-- Choice items will be added here dynamically -->
+                                        <div class="choice-item p-3 mb-3" id="choice-template-0">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1 me-3">
+                                                    <input type="text" class="form-control text-dark" name="choice_text" placeholder="Enter answer choice" required>
+                                                </div>
+                                                <div class="choice-actions">
+                                                    <div class="correct-toggle">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input correct-choice" type="checkbox" name="is_correct" value="0">
+                                                            <label class="form-check-label text-dark">Correct</label>
+                                                        </div>
+                                                    </div>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm remove-choice-btn" data-id="0">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button type="button" class="btn btn-outline-secondary btn-sm add-choice-btn" id="addChoiceBtn">
+                                        <i class="fas fa-plus me-1"></i> Add Another Choice
+                                    </button>
+                                </div>
+                                
+                                <hr class="my-4">
+                                <div class="mb-4">
+                                    <label for="explanation" class="form-label">Explanation (Optional)</label>
+                                    <textarea class="form-control text-dark" id="explanation" name="explanation" rows="2" placeholder="Explain why the correct answer is right"></textarea>
+                                    <small class="text-dark">This will be shown to students after they answer the question.</small>
+                                </div>
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="submit" class="btn btn-outline-secondary me-md-2" name="save_and_finish">Save & Finish</button>
+                                    <button type="submit" class="btn btn-primary" name="save_and_add">Save & Add Another</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Column - Existing Questions -->
+                <div class="col-lg-5">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-list text-primary me-2"></i>Existing Questions
+                            </h5>
+                            <span class="badge bg-secondary">{{ existing_questions.count }}</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if existing_questions %}
+                                <div class="list-group list-group-flush">
+                                    {% for question in existing_questions %}
+                                        <div class="question-list-item">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <span class="badge 
+                                                        {% if question.question_type == 'multiple_choice' %}badge-mc{% elif question.question_type == 'true_false' %}badge-tf{% else %}badge-sa{% endif %} 
+                                                        me-2">
+                                                        {% if question.question_type == 'multiple_choice' %}MC
+                                                        {% elif question.question_type == 'true_false' %}T/F
+                                                        {% else %}SA{% endif %}
+                                                    </span>
+                                                    <small class="text-muted">#{{ question.order }} | {{ question.points }} point{{ question.points|pluralize }}</small>
+                                                </div>
+                                                <div class="question-controls">
+                                                    <a href="{% url 'quizzes:edit_question' quiz_id=quiz.id question_id=question.id %}" class="btn btn-outline-secondary btn-sm">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-danger btn-sm">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <p class="mb-1 text-dark">{{ question.text }}</p>
+                                            
+                                            {% if question.choices.all %}
+                                                <div class="ms-3 mt-2">
+                                                    {% for choice in question.choices.all %}
+                                                        <div class="mb-1 d-flex align-items-center">
+                                                            <span class="me-2">{% if choice.is_correct %}<i class="fas fa-check-circle text-success"></i>{% else %}<i class="fas fa-circle text-muted"></i>{% endif %}</span>
+                                                            <span class="text-dark small">{{ choice.text }}</span>
+                                                        </div>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3">
+                                        <i class="fas fa-question fa-3x text-muted"></i>
+                                    </div>
+                                    <h6 class="mb-2">No questions yet</h6>
+                                    <p class="text-muted">Add your first question using the form.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const questionType = document.getElementById('question_type');
+        const choicesSection = document.getElementById('choicesSection');
+        const addChoiceBtn = document.getElementById('addChoiceBtn');
+        const choicesContainer = document.getElementById('choicesContainer');
+        let choiceCounter = 1;
+        
+        // Add initial choices if needed
+        if (questionType.value === 'true_false') {
+            setupTrueFalseChoices();
+        } else if (questionType.value === 'multiple_choice') {
+            // Add a second choice for multiple choice
+            addChoice();
+        }
+        
+        // Handle question type change
+        questionType.addEventListener('change', function() {
+            // Clear existing choices
+            while (choicesContainer.children.length > 0) {
+                choicesContainer.removeChild(choicesContainer.lastChild);
+            }
+            
+            choiceCounter = 0;
+            
+            if (this.value === 'multiple_choice') {
+                choicesSection.style.display = 'block';
+                addChoice();
+                addChoice();
+                addChoiceBtn.style.display = 'block';
+            } else if (this.value === 'true_false') {
+                choicesSection.style.display = 'block';
+                setupTrueFalseChoices();
+                addChoiceBtn.style.display = 'none';
+            } else {
+                // Short answer
+                choicesSection.style.display = 'none';
+            }
+        });
+        
+        // Add choice button
+        addChoiceBtn.addEventListener('click', function() {
+            addChoice();
+        });
+        
+        // Add choice function
+        function addChoice() {
+            const choiceItemTemplate = document.getElementById('choice-template-0');
+            const newChoiceId = choiceCounter++;
+            
+            const choiceItem = document.createElement('div');
+            choiceItem.className = 'choice-item p-3 mb-3';
+            choiceItem.id = 'choice-' + newChoiceId;
+            
+            choiceItem.innerHTML = `
+                <div class="d-flex">
+                    <div class="flex-grow-1 me-3">
+                        <input type="text" class="form-control text-dark" name="choice_text" placeholder="Enter answer choice" required>
+                    </div>
+                    <div class="choice-actions">
+                        <div class="correct-toggle">
+                            <div class="form-check">
+                                <input class="form-check-input correct-choice" type="checkbox" name="is_correct" value="${newChoiceId}">
+                                <label class="form-check-label text-dark">Correct</label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-choice-btn" data-id="${newChoiceId}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            choicesContainer.appendChild(choiceItem);
+            
+            // Add event listener for remove button
+            const removeBtn = choiceItem.querySelector('.remove-choice-btn');
+            removeBtn.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const choiceToRemove = document.getElementById('choice-' + id);
+                choiceToRemove.remove();
+            });
+            
+            // Add event listener for correct toggle
+            const correctToggle = choiceItem.querySelector('.correct-choice');
+            correctToggle.addEventListener('change', function() {
+                const questionType = document.getElementById('question_type').value;
+                if (questionType === 'true_false' || (questionType === 'multiple_choice' && !this.checked)) {
+                    return;
+                }
+                
+                const allCheckboxes = document.querySelectorAll('.correct-choice');
+                allCheckboxes.forEach(checkbox => {
+                    if (checkbox !== this) {
+                        checkbox.checked = false;
+                        checkbox.closest('.choice-item').classList.remove('is-correct');
+                    }
+                });
+                
+                if (this.checked) {
+                    this.closest('.choice-item').classList.add('is-correct');
+                } else {
+                    this.closest('.choice-item').classList.remove('is-correct');
+                }
+            });
+            
+            return choiceItem;
+        }
+        
+        // Set up True/False choices
+        function setupTrueFalseChoices() {
+            const trueChoice = addChoice();
+            const trueInput = trueChoice.querySelector('input[name="choice_text"]');
+            trueInput.value = 'True';
+            
+            const falseChoice = addChoice();
+            const falseInput = falseChoice.querySelector('input[name="choice_text"]');
+            falseInput.value = 'False';
+            
+            // Disable editing of true/false text
+            trueInput.readOnly = true;
+            falseInput.readOnly = true;
+            
+            // Hide remove buttons for true/false
+            trueChoice.querySelector('.remove-choice-btn').style.display = 'none';
+            falseChoice.querySelector('.remove-choice-btn').style.display = 'none';
+        }
+        
+        // Form validation
+        document.getElementById('questionForm').addEventListener('submit', function(event) {
+            const questionType = document.getElementById('question_type').value;
+            
+            if (questionType === 'multiple_choice' || questionType === 'true_false') {
+                const choices = document.querySelectorAll('input[name="choice_text"]');
+                if (choices.length < 2) {
+                    alert('You must provide at least two answer choices.');
+                    event.preventDefault();
+                    return;
+                }
+                
+                const correctChoices = document.querySelectorAll('input[name="is_correct"]:checked');
+                if (correctChoices.length === 0) {
+                    alert('You must mark at least one choice as correct.');
+                    event.preventDefault();
+                    return;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

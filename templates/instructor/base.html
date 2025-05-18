@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Dashboard | E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Instructor Sidebar -->
+        <div class="col-lg-2 bg-dark text-white px-0 border-end">
+            <div class="d-flex flex-column min-vh-100 p-3">
+                <h5 class="my-3 text-center">Instructor Dashboard</h5>
+                <hr class="text-white-50">
+                
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:courses' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'courses' %}active{% endif %}">
+                            <i class="fas fa-book me-2"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:quizzes' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'quizzes' %}active{% endif %}">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:analytics' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:forums' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'forums' %}active{% endif %}">
+                            <i class="fas fa-comments me-2"></i>
+                            Forums
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <div class="mt-auto text-center">
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Site
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="col-lg-10 ms-auto p-0">
+            <div class="content-wrapper p-4">
+                {% block instructor_content %}
+                    <!-- This is where the specific instructor page content will go -->
+                    <h1>Loading content...</h1>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

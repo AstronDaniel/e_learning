@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Course Analytics | Instructor Dashboard{% endblock %}
+
+{% block extracss %}
+<style>
+    .stat-card {
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Course Analytics: {{ course.title }}</h1>
+            <p class="text-muted">Performance metrics and insights</p>
+        </div>
+        <div>
+            <a href="{% url 'instructor:courses' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Courses
+            </a>
+            <a href="{% url 'instructor:course_detail' course_slug=course.slug %}" class="btn btn-primary">
+                <i class="fas fa-cog me-2"></i>Manage Course
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-primary mb-2">{{ total_enrollments }}</div>
+                    <p class="text-muted mb-0">Total Enrollments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-success mb-2">{{ completed_enrollments }}</div>
+                    <p class="text-muted mb-0">Course Completions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-warning mb-2">{{ completion_rate|floatformat:1 }}%</div>
+                    <p class="text-muted mb-0">Completion Rate</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="card-body text-center">
+                    <div class="display-4 fw-bold text-info mb-2">{{ quiz_stats|length }}</div>
+                    <p class="text-muted mb-0">Active Quizzes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Sections -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Lesson Completion Rates -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Lesson Completion Rates</h5>
+                </div>
+                <div class="card-body">
+                    {% if lesson_stats %}
+                        <div class="chart-container mb-3">
+                            <canvas id="lessonCompletionChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Lesson</th>
+                                        <th>Completions</th>
+                                        <th>Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in lesson_stats %}
+                                    <tr>
+                                        <td>{{ stat.lesson.title }}</td>
+                                        <td>{{ stat.completions }} / {{ total_enrollments }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" style="width: {{ stat.completion_rate }}%"></div>
+                                                </div>
+                                                <span class="ms-2">{{ stat.completion_rate|floatformat:1 }}%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h5>No lesson data available</h5>
+                            <p class="text-muted mb-0">Data will appear once students start engaging with lessons</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quiz Performance -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Quiz Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if quiz_stats %}
+                        <div class="chart-container mb-3">
+                            <canvas id="quizPerformanceChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Quiz</th>
+                                        <th>Attempts</th>
+                                        <th>Avg. Score</th>
+                                        <th>Passing Rate</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for stat in quiz_stats %}
+                                    <tr>
+                                        <td>{{ stat.quiz.title }}</td>
+                                        <td>{{ stat.attempts }}</td>
+                                        <td>{{ stat.avg_score|floatformat:1 }}%</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1" style="height: 6px;">
+                                                    <div class="progress-bar {% if stat.passing_rate >= 70 %}bg-success{% elif stat.passing_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}" role="progressbar" style="width: {{ stat.passing_rate }}%"></div>
+                                                </div>
+                                                <span class="ms-2">{{ stat.passing_rate|floatformat:1 }}%</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'instructor:quiz_results' quiz_id=stat.quiz.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                            <h5>No quiz data available</h5>
+                            <p class="text-muted mb-0">Data will appear once students attempt quizzes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Student Progress -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Student Progress</h5>
+                    <a href="{% url 'instructor:students' course_slug=course.slug %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-0">Course Completion</h6>
+                                <small class="text-muted">Student progress overview</small>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="mb-0">{{ completion_rate|floatformat:1 }}%</h6>
+                                <small class="text-muted">Average completion</small>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ completion_rate }}%"></div>
+                        </div>
+                    </div>
+                    <hr class="my-0">
+                    <div class="p-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ total_enrollments }}</h5>
+                                <small class="text-muted">Enrolled</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ total_enrollments|subtract:completed_enrollments }}</h5>
+                                <small class="text-muted">In Progress</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="mb-0">{{ completed_enrollments }}</h5>
+                                <small class="text-muted">Completed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recommendations -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center p-3 border-bottom">
+                        <div class="bg-primary-light rounded-circle p-3 me-3">
+                            <i class="fas fa-lightbulb text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Improve Quiz Passing Rates</h6>
+                            <p class="text-muted small mb-0">Consider reviewing quiz content or providing additional study materials.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center p-3 border-bottom">
+                        <div class="bg-warning-light rounded-circle p-3 me-3">
+                            <i class="fas fa-comment-dots text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Encourage Forum Participation</h6>
+                            <p class="text-muted small mb-0">Students who participate in forums tend to have higher completion rates.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center p-3">
+                        <div class="bg-success-light rounded-circle p-3 me-3">
+                            <i class="fas fa-video text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Add More Video Content</h6>
+                            <p class="text-muted small mb-0">Consider adding video lessons to improve engagement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lesson completion chart
+        {% if lesson_stats %}
+        const lessonCtx = document.getElementById('lessonCompletionChart').getContext('2d');
+        new Chart(lessonCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for stat in lesson_stats %}'{{ stat.lesson.title|truncatechars:25 }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Completion Rate',
+                    data: [{% for stat in lesson_stats %}{{ stat.completion_rate|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        {% endif %}
+
+        // Quiz performance chart
+        {% if quiz_stats %}
+        const quizCtx = document.getElementById('quizPerformanceChart').getContext('2d');
+        new Chart(quizCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for stat in quiz_stats %}'{{ stat.quiz.title|truncatechars:25 }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                datasets: [{
+                    label: 'Average Score',
+                    data: [{% for stat in quiz_stats %}{{ stat.avg_score|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Passing Rate',
+                    data: [{% for stat in quiz_stats %}{{ stat.passing_rate|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                    backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

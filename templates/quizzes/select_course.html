@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select Course for Quiz | E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'users:dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Create Quiz</li>
+                </ol>
+            </nav>
+            <h1 class="display-5 fw-bold mb-3">Create a Quiz</h1>
+            <p class="lead text-secondary">Select a course to create a quiz for.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if courses %}
+            {% for course in courses %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ course.title }}</h5>
+                        <p class="card-text text-muted small">{{ course.short_description }}</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'quizzes:create' course_slug=course.slug %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i> Create Quiz for this Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5 class="alert-heading">No Courses Found</h5>
+                    <p>You haven't created any courses yet. You need to create a course first before you can add quizzes to it.</p>
+                    <hr>
+                    <a href="{% url 'courses:create' %}" class="btn btn-primary">Create a Course</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

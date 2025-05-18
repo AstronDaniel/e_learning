@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Quiz | {{ course.title }} | E-Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Override any problematic styles from the base template */
+    body {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+    
+    .container {
+        background-color: transparent !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, label, small, .text-dark {
+        color: #212529 !important;
+    }
+    
+    .card {
+        background-color: #ffffff !important;
+        border-color: #e9ecef !important;
+    }
+    
+    .btn-primary {
+        background-color: #ff8c00 !important;
+        border-color: #ff8c00 !important;
+    }
+    
+    .btn-outline-secondary {
+        color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+    
+    .form-control, .form-select {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border-color: #ced4da !important;
+    }
+    
+    .alert-info {
+        background-color: #cff4fc !important;
+        color: #055160 !important;
+        border-color: #b6effb !important;
+    }
+    
+    .breadcrumb-item a {
+        color: #ff8c00 !important;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6c757d !important;
+    }
+    
+    /* Fix specific elements */
+    .card-header {
+        background-color: #ffffff !important;
+    }
+    
+    .text-primary {
+        color: #ff8c00 !important;
+    }
+    
+    .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .bg-primary {
+        background-color: #ff8c00 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header with Navigation -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Create New Quiz</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{% url 'courses:list' %}" class="text-dark">Courses</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'courses:detail' slug=course.slug %}" class="text-dark">{{ course.title }}</a></li>
+                            <li class="breadcrumb-item active">New Quiz</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a href="{% url 'instructor:quizzes' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Quizzes
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quiz Creation Form -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-question-circle text-primary me-2"></i>Quiz Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fas fa-info-circle fa-lg"></i>
+                            </div>
+                            <div>
+                                <h5 class="alert-heading">Creating a Quiz</h5>
+                                <p class="mb-0">First, provide the basic details for your quiz. After saving, you'll be able to add questions.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Quiz Title *</label>
+                            <input type="text" class="form-control text-dark" id="title" name="title" required>
+                            <small class="text-dark">A clear, descriptive title for your quiz.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control text-dark" id="description" name="description" rows="3"></textarea>
+                            <small class="text-dark">Instructions, scope, or other information about this quiz.</small>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="time_limit" class="form-label">Time Limit (minutes)</label>
+                                <input type="number" class="form-control text-dark" id="time_limit" name="time_limit" min="0" placeholder="No limit">
+                                <small class="text-dark">Leave empty for no time limit.</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="passing_score" class="form-label">Passing Score (%)</label>
+                                <input type="number" class="form-control text-dark" id="passing_score" name="passing_score" min="0" max="100" value="70">
+                                <small class="text-dark">Percentage needed to pass.</small>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="max_attempts" class="form-label">Max Attempts</label>
+                                <input type="number" class="form-control text-dark" id="max_attempts" name="max_attempts" min="0" value="0" placeholder="Unlimited">
+                                <small class="text-dark">0 = unlimited attempts.</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="lesson" class="form-label">Associated Lesson (Optional)</label>
+                            <select class="form-select text-dark" id="lesson" name="lesson">
+                                <option value="">Not associated with a specific lesson</option>
+                                {% for lesson in lessons %}
+                                <option value="{{ lesson.id }}">{{ lesson.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-dark">Link this quiz to a specific lesson in your course.</small>
+                        </div>
+
+                        <div class="mb-4 form-check">
+                            <input type="checkbox" class="form-check-input" id="randomize" name="randomize" checked>
+                            <label class="form-check-label text-dark" for="randomize">Randomize questions</label>
+                            <small class="d-block text-dark">Present questions in random order for each student.</small>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'instructor:quizzes' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Quiz & Add Questions</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tips Card -->
+            <div class="card mt-4 border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>Quiz Creation Tips
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-check-circle text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-dark">Mix Question Types</h6>
+                                    <p class="text-dark mb-0 small">Include a variety of multiple choice, true/false, and other question types to assess different skills.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-clock text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-dark">Set Appropriate Time</h6>
+                                    <p class="text-dark mb-0 small">Allow enough time for students to read and answer each question (typically 1-2 minutes per question).</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-random text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-dark">Randomize Questions</h6>
+                                    <p class="text-dark mb-0 small">Randomizing questions and answer choices helps discourage cheating.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                        <i class="fas fa-shield-alt text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1 text-dark">Provide Clear Instructions</h6>
+                                    <p class="text-dark mb-0 small">Include clear instructions in the description to help students understand what to expect.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,427 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Overview | Instructor Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Override any problematic styles from the base template */
+    body {
+        background-color: #f8f9fa !important;
+        color: #212529 !important;
+    }
+    
+    .container-fluid, .container {
+        background-color: transparent !important;
+        color: #212529 !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, label, small, .text-dark {
+        color: #212529 !important;
+    }
+    
+    .card {
+        background-color: #ffffff !important;
+        border-color: #e9ecef !important;
+    }
+    
+    .btn-primary {
+        background-color: #ff8c00 !important;
+        border-color: #ff8c00 !important;
+    }
+    
+    .btn-outline-secondary {
+        color: #6c757d !important;
+        border-color: #6c757d !important;
+    }
+    
+    .form-control, .form-select {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+        border-color: #ced4da !important;
+    }
+    
+    .breadcrumb-item a {
+        color: #ff8c00 !important;
+    }
+    
+    .breadcrumb-item.active {
+        color: #6c757d !important;
+    }
+    
+    /* Fix specific elements */
+    .card-header {
+        background-color: #ffffff !important;
+    }
+    
+    .text-primary {
+        color: #ff8c00 !important;
+    }
+    
+    /* Debug outline to see if content is rendering */
+    .content-wrapper {
+        border: 2px solid red !important;
+        min-height: 500px;
+    }
+    
+    /* Force visibility on important elements */
+    #enrollmentChart {
+        border: 1px solid #ccc !important;
+        min-height: 300px !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Instructor Sidebar -->
+        <div class="col-lg-2 bg-dark text-white px-0 border-end">
+            <div class="d-flex flex-column min-vh-100 p-3">
+                <h5 class="my-3 text-center" style="color: var(--primary-color);">Instructor Dashboard</h5>
+                <hr class="text-white-50">
+                
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'dashboard' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-home me-2" style="color: var(--primary-color);"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:courses' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'courses' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'courses' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-book me-2" style="color: var(--primary-color);"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:quizzes' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'quizzes' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'quizzes' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-question-circle me-2" style="color: var(--primary-color);"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:analytics' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'analytics' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--primary-color);"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:forums' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'forums' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'forums' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-comments me-2" style="color: var(--primary-color);"></i>
+                            Forums
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <div class="mt-auto text-center">
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Site
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-lg-10 ms-auto p-0">
+            <div class="content-wrapper p-4">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-1">Analytics Overview</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'instructor:dashboard' %}" style="color: var(--primary-color);">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Analytics</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Data Cards -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Enrollments Card -->
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="rounded-3 p-3 me-3" style="background-color: rgba(255, 140, 0, 0.1);">
+                                        <i class="fas fa-users" style="color: var(--primary-color); font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title text-muted mb-0">Total Enrollments</h6>
+                                        <h2 class="mt-2 mb-0">{{ total_enrollments }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Course Completion Card -->
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="rounded-3 p-3 me-3" style="background-color: rgba(0, 200, 200, 0.1);">
+                                        <i class="fas fa-check-circle" style="color: var(--secondary-color); font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title text-muted mb-0">Completed Courses</h6>
+                                        <h2 class="mt-2 mb-0">{{ completed_enrollments }}</h2>
+                                    </div>
+                                </div>
+                                <div class="progress mt-3" style="height: 6px;">
+                                    <div class="progress-bar" role="progressbar" style="width: {{ completion_rate|floatformat:0 }}%; background-color: var(--secondary-color);" aria-valuenow="{{ completion_rate|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="text-end mt-1">
+                                    <small class="text-muted">{{ completion_rate|floatformat:1 }}% completion rate</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Average Rating Card -->
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="rounded-3 p-3 me-3" style="background-color: rgba(255, 193, 7, 0.1);">
+                                        <i class="fas fa-star" style="color: #ffc107; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title text-muted mb-0">Average Rating</h6>
+                                        <h2 class="mt-2 mb-0">{{ avg_rating|floatformat:1 }}</h2>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= avg_rating|floatformat:0|add:"0" %}
+                                                <i class="fas fa-star text-warning me-1"></i>
+                                            {% elif forloop.counter <= avg_rating|floatformat:0|add:"0.5" %}
+                                                <i class="fas fa-star-half-alt text-warning me-1"></i>
+                                            {% else %}
+                                                <i class="far fa-star text-warning me-1"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Courses Card -->
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="rounded-3 p-3 me-3" style="background-color: rgba(25, 135, 84, 0.1);">
+                                        <i class="fas fa-book" style="color: #198754; font-size: 1.5rem;"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title text-muted mb-0">Total Courses</h6>
+                                        <h2 class="mt-2 mb-0">{{ courses|length }}</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enrollment Trends Chart -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line me-2" style="color: var(--primary-color);"></i>
+                            Enrollment Trends (Last 30 Days)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if enrollments_by_day %}
+                            <canvas id="enrollmentChart" height="300"></canvas>
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-chart-line fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="mb-2">No enrollment data available</h5>
+                                <p class="text-muted mb-0">There were no new enrollments in the last 30 days.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Course Performance Table -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-graduation-cap me-2" style="color: var(--primary-color);"></i>
+                            Course Performance
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if courses %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="ps-3">Course</th>
+                                            <th>Level</th>
+                                            <th>Students</th>
+                                            <th>Completion Rate</th>
+                                            <th>Rating</th>
+                                            <th class="text-end pe-3">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for course in courses %}
+                                            <tr>
+                                                <td class="ps-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3">
+                                                            {% if course.image %}
+                                                                <img src="{{ course.image.url }}" alt="{{ course.title }}" class="rounded" width="48" height="48" style="object-fit: cover;">
+                                                            {% else %}
+                                                                <div class="rounded bg-secondary d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                                                    <i class="fas fa-book text-white"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ course.title }}</h6>
+                                                            <small class="text-muted">{{ course.category.name }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ course.get_level_badge_class }}">
+                                                        {{ course.get_level_display }}
+                                                    </span>
+                                                </td>                                                <td>
+                                                    <span class="badge bg-secondary">{{ course.enrollment_count }}</span>
+                                                </td>
+                                                <td>
+                                                    {% with completed=course.enrollments.filter.completed.count %}
+                                                    {% with completion_rate=completed|floatformat:0 %}
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="progress me-2" style="height: 6px; width: 80px;">
+                                                            <div class="progress-bar" role="progressbar" 
+                                                                style="width: {% if course.enrollment_count %}{{ completion_rate }}%{% else %}0%{% endif %};
+                                                                background-color: {% if completion_rate >= 70 %}var(--primary-color)
+                                                                {% elif completion_rate >= 50 %}var(--secondary-color)
+                                                                {% else %}var(--dark-color){% endif %};"
+                                                                aria-valuenow="{{ completion_rate }}" aria-valuemin="0" aria-valuemax="100">
+                                                            </div>
+                                                        </div>
+                                                        <small>{% if course.enrollment_count %}{{ completion_rate }}%{% else %}N/A{% endif %}</small>
+                                                    </div>
+                                                    {% endwith %}
+                                                    {% endwith %}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex">
+                                                        {% for i in "12345" %}
+                                                            {% if forloop.counter <= course.rating_average|floatformat:0|add:"0" %}
+                                                                <i class="fas fa-star text-warning fs-6"></i>
+                                                            {% elif forloop.counter <= course.rating_average|add:"0.5"|floatformat:0 %}
+                                                                <i class="fas fa-star-half-alt text-warning fs-6"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning fs-6"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        <span class="ms-2">{{ course.rating_average|floatformat:1 }}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-end pe-3">
+                                                    <a href="{% url 'instructor:course_analytics' course_slug=course.slug %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-chart-bar me-1"></i> Analytics
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-4">
+                                    <i class="fas fa-book fa-3x text-muted"></i>
+                                </div>
+                                <h4 class="mb-3">No Courses Found</h4>
+                                <p class="text-muted">You haven't created any courses yet.</p>
+                                <a href="{% url 'courses:create' %}" class="btn btn-primary mt-2">
+                                    <i class="fas fa-plus-circle me-1"></i> Create Your First Course
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+{% if enrollments_by_day %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('enrollmentChart').getContext('2d');
+        
+        // Extract data from Django template
+        const dates = [
+            {% for entry in enrollments_by_day %}
+                "{{ entry.date|date:'M d' }}",
+            {% endfor %}
+        ];
+        
+        const enrollments = [
+            {% for entry in enrollments_by_day %}
+                {{ entry.count }},
+            {% endfor %}
+        ];
+        
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: dates,
+                datasets: [{
+                    label: 'New Enrollments',
+                    data: enrollments,
+                    backgroundColor: 'rgba(255, 140, 0, 0.2)',
+                    borderColor: 'rgba(255, 140, 0, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    pointBackgroundColor: 'rgba(255, 140, 0, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 1,
+                    pointRadius: 4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

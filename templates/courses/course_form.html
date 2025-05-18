@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load course_filters %}
+
+{% block title %}Create New Course | E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="display-5 fw-bold mb-4">Create New Course</h1>
+            
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info mb-4">
+                            <h5 class="alert-heading">Course Creation Guidelines</h5>
+                            <p class="mb-0">Please provide all the required information about your course. After creating the course, you'll be able to add lessons and learning materials.</p>
+                        </div>
+                        
+                        {% if form.errors %}
+                            <div class="alert alert-danger">
+                                <h5 class="alert-heading">Please correct the following errors:</h5>
+                                {{ form.errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Course Title *</label>
+                            {{ form.title|addclass:"form-control" }}
+                            <small class="form-text text-muted">Choose a clear and descriptive title (max 200 characters).</small>
+                        </div>
+                          <div class="mb-4">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    {{ form.category|addclass:"form-select text-dark" }}
+                                </div>
+                                <div class="col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#newCategoryModal">
+                                        <i class="fas fa-plus-circle me-1"></i> New Category
+                                    </button>
+                                </div>
+                            </div>
+                        </div>                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="{{ form.level.id_for_label }}" class="form-label">Difficulty Level *</label>
+                                {{ form.level|addclass:"form-select text-dark" }}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.duration.id_for_label }}" class="form-label">Duration (hours) *</label>
+                                {{ form.duration|addclass:"form-control text-dark" }}
+                                <small class="form-text text-dark">Estimated course duration in hours</small>
+                            </div>
+                        </div>
+                          <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Course Description *</label>
+                            {{ form.description|addclass:"form-control text-dark" }}
+                            <small class="form-text text-dark">Detailed course description, learning objectives, and what students will gain.</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.prerequisites.id_for_label }}" class="form-label">Prerequisites</label>
+                            {{ form.prerequisites|addclass:"form-control text-dark" }}
+                            <small class="form-text text-dark">Any prerequisites or requirements for taking this course.</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.syllabus.id_for_label }}" class="form-label">Syllabus</label>
+                            {{ form.syllabus|addclass:"form-control text-dark" }}
+                            <small class="form-text text-dark">Outline of the course content and structure.</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Cover Image</label>
+                            {{ form.image|addclass:"form-control text-dark" }}
+                            <small class="form-text text-dark">Recommended size: 1200×675px (16:9 ratio).</small>
+                        </div>
+                        
+                        <div class="mb-4 form-check">
+                            {{ form.is_published|addclass:"form-check-input" }}
+                            <label for="{{ form.is_published.id_for_label }}" class="form-check-label">Publish this course immediately</label>
+                            <small class="d-block form-text text-dark">If unchecked, the course will be saved as a draft.</small>
+                        </div>
+                          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'courses:list' %}" class="btn btn-light me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Course</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for New Category -->
+ <style>
+    #newCategoryModal *{
+        color:#333 !important;
+    }
+ </style>
+<div class="modal fade" id="newCategoryModal" tabindex="-1" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newCategoryModalLabel">Create New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newCategoryForm">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">Category Name</label>
+                        <input type="text" class="form-control" id="categoryName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryIcon" class="form-label">Icon (Font Awesome class)</label>
+                        <input type="text" class="form-control" id="categoryIcon" placeholder="fa-book">
+                        <small class="text-dark">Preview: <i id="iconPreview" class="fas fa-book"></i></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveCategory">Create Category</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extrajs %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview icon when typing
+        const iconInput = document.getElementById('categoryIcon');
+        const iconPreview = document.getElementById('iconPreview');
+        
+        iconInput.addEventListener('input', function() {
+            iconPreview.className = 'fas ' + this.value;
+        });
+        
+        // Handle category creation
+        document.getElementById('saveCategory').addEventListener('click', function() {
+            const name = document.getElementById('categoryName').value;
+            const description = document.getElementById('categoryDescription').value;
+            const icon = document.getElementById('categoryIcon').value;
+            
+            if (!name) {
+                alert('Category name is required');
+                return;
+            }
+            
+            // Create category via AJAX
+            fetch('{% url "courses:create_category" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    icon: icon
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Add new category to the dropdown
+                    const select = document.getElementById('{{ form.category.id_for_label }}');
+                    const option = new Option(data.category.name, data.category.id);
+                    select.add(option);
+                    select.value = data.category.id; // Select the new category
+                    
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('newCategoryModal'));
+                    modal.hide();
+                    
+                    // Show success message
+                    alert('Category created successfully!');
+                } else {
+                    alert('Error creating category: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while creating the category. Please try again.');
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

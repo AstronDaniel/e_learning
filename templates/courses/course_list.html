@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Courses{% endblock %}
+
+{% block content %}
+<!-- Course Hero Section with Neon Effect -->
+<section class="py-5 position-relative course-header-section">
+    <!-- Background elements -->
+    <div class="position-absolute top-0 start-0 end-0 bottom-0 overflow-hidden" style="z-index: 0;">
+        <div class="position-absolute" style="width: 300px; height: 300px; border-radius: 50%; background: rgba(110, 43, 243, 0.05); filter: blur(80px); top: -50px; left: 5%;"></div>
+        <div class="position-absolute" style="width: 250px; height: 250px; border-radius: 50%; background: rgba(13, 232, 236, 0.05); filter: blur(60px); bottom: -30px; right: 10%;"></div>
+    </div>
+    
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold neon-text mb-3" data-aos="fade-up">
+                    Academic <span class="neon-text-pink">Courses</span>
+                </h1>
+                <p class="lead text-secondary mb-4" data-aos="fade-up" data-aos-delay="100">
+                    Discover university-level courses designed to enhance your academic knowledge and skills
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="d-flex justify-content-lg-end align-items-center" data-aos="fade-left">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i> Sort Courses
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown" 
+                            style="background-color: var(--background-card); border-color: var(--border-color);">
+                            <li><a class="dropdown-item text-light" href="?sort=newest">Newest First</a></li>
+                            <li><a class="dropdown-item text-light" href="?sort=popular">Most Popular</a></li>
+                            <li><a class="dropdown-item text-light" href="?sort=level_asc">Level: Basic to Advanced</a></li>
+                            <li><a class="dropdown-item text-light" href="?sort=level_desc">Level: Advanced to Basic</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>    <!-- Categories with Neon Style -->
+    <div class="row mb-5" data-aos="fade-up" data-aos-delay="200">
+        <div class="col-12">
+            <div class="categories-wrapper p-3 rounded-3">
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'courses:list' %}" class="category-pill {% if not current_category %}active{% endif %}">
+                        <i class="fas fa-layer-group me-2"></i> All Categories
+                    </a>
+                    {% for category in categories %}
+                        <a href="{% url 'courses:category' category.slug %}" class="category-pill {% if current_category.id == category.id %}active{% endif %}">
+                            {% if category.icon %}<i class="{{ category.icon }} me-2"></i>{% else %}<i class="fas fa-folder me-2"></i>{% endif %}
+                            {{ category.name }}
+                        </a>
+                    {% empty %}
+                        <!-- No categories yet -->
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Course Grid with Neon Cards -->
+    <div class="row g-4">
+        {% if courses %}
+            {% for course in courses %}
+                <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|divisibleby:3|yesno:'200,100,0' }}">
+                    <div class="course-card card h-100">
+                        <div class="position-relative">
+                            <div class="card-img-wrapper overflow-hidden">
+                                {% if course.image %}
+                                    <img src="{{ course.image.url }}" class="card-img-top" alt="{{ course.title }}">
+                                {% else %}
+                                    <img src="{% static 'images/course-placeholder.jpg' %}" class="card-img-top" alt="{{ course.title }}">
+                                {% endif %}
+                            </div>
+                            <div class="image-overlay"></div>
+                            <span class="course-level badge {{ course.get_level_badge_class }} position-absolute" style="top: 15px; right: 15px;">
+                                {{ course.get_level_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+                                    <i class="fas fa-folder me-1"></i> {{ course.category.name }}
+                                </span>
+                                {% if course.is_featured %}
+                                    <span class="badge bg-tertiary px-3 py-2 rounded-pill">Featured</span>
+                                {% elif course.is_new %}
+                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">New</span>
+                                {% else %}
+                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">{{ course.get_academic_level_display|default:"Undergraduate" }}</span>
+                                {% endif %}                            </div>
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <p class="card-text">{{ course.description|truncatechars:100 }}</p>
+                            
+                            <div class="d-flex align-items-center mt-3 mb-1">
+                                <div class="me-3 d-flex align-items-center">
+                                    <i class="fas fa-book me-2 text-secondary"></i>
+                                    <span>{{ course.lesson_count }} Lessons</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-clock me-2 text-secondary"></i>
+                                    <span>{{ course.duration_hours|default:"8" }} Hours</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3 progress course-progress" style="height: 6px;">
+                                <div class="progress-bar progress-glow" role="progressbar" style="width: {% if user.is_authenticated and course.user_progress %}{{ course.user_progress }}%{% else %}0%{% endif %}"></div>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center">
+                                    {% if course.instructor.profile.avatar %}
+                                        <img src="{{ course.instructor.profile.avatar.url }}" alt="{{ course.instructor.username }}" class="rounded-circle" width="32" height="32">
+                                    {% else %}
+                                        <i class="fas fa-user text-primary"></i>
+                                    {% endif %}
+                                </div>
+                                <small>{{ course.instructor.get_full_name|default:course.instructor.username }}</small>
+                            </div>
+                            <small>
+                                <i class="fas fa-users me-1 text-secondary"></i> {{ course.enrollment_count }}
+                            </small>
+                            
+                            <a href="{% url 'courses:detail' course.slug %}" class="btn btn-sm btn-secondary btn-glow position-absolute bottom-0 end-0 m-3">
+                                View Details <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="empty-state" data-aos="fade-up">
+                    <img src="{% static 'images/empty-courses.svg' %}" alt="No courses" class="mb-3" style="max-width: 200px; opacity: 0.5;">
+                    <h3>No courses found</h3>
+                    <p class="text-muted">There are no courses available in this category yet.</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <nav aria-label="Course pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

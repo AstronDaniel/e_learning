@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Course Lessons | Instructor Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Instructor Sidebar -->
+        <div class="col-lg-2 bg-dark text-white px-0 border-end">
+            <div class="d-flex flex-column min-vh-100 p-3">
+                <h5 class="my-3 text-center">Instructor Dashboard</h5>
+                <hr class="text-white-50">
+                
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <i class="fas fa-home me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:courses' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'courses' %}active{% endif %}">
+                            <i class="fas fa-book me-2"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:quizzes' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'quizzes' %}active{% endif %}">
+                            <i class="fas fa-question-circle me-2"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:analytics' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:forums' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'forums' %}active{% endif %}">
+                            <i class="fas fa-comments me-2"></i>
+                            Forums
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <div class="mt-auto text-center">
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Site
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-lg-10 ms-auto p-0">
+            <div class="content-wrapper p-4">
+                <!-- Course Header with Navigation -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h2 mb-1">{{ course.title }} - Lessons</h1>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item"><a href="{% url 'instructor:dashboard' %}">Dashboard</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'instructor:courses' %}">Courses</a></li>
+                                <li class="breadcrumb-item"><a href="{% url 'instructor:course_detail' course_slug=course.slug %}">{{ course.title }}</a></li>
+                                <li class="breadcrumb-item active">Lessons</li>
+                            </ol>
+                        </nav>
+                    </div>
+                    <div>
+                        <a href="{% url 'instructor:course_detail' course_slug=course.slug %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Course
+                        </a>
+                        <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                            <i class="fas fa-plus-circle me-1"></i> Add Lesson
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Course Lessons -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-book-open text-primary me-2"></i>Lessons ({{ lessons|length }})
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if lessons %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 70px" class="ps-3">Order</th>
+                                            <th>Title</th>
+                                            <th>Duration</th>
+                                            <th>Free Preview</th>
+                                            <th>Created</th>
+                                            <th class="text-end pe-3">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sortableLessons">
+                                        {% for lesson in lessons %}
+                                            <tr data-lesson-id="{{ lesson.id }}">
+                                                <td class="ps-3">
+                                                    <div class="d-flex align-items-center">
+                                                        <span class="lesson-order fw-bold">{{ lesson.order }}</span>
+                                                        <i class="fas fa-grip-vertical ms-2 text-muted handle" style="cursor: move;"></i>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="me-3">
+                                                            {% if lesson.video_url %}
+                                                                <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                                                    <i class="fas fa-play-circle text-primary"></i>
+                                                                </div>
+                                                            {% else %}
+                                                                <div class="bg-secondary bg-opacity-10 rounded-circle p-2">
+                                                                    <i class="fas fa-file-alt text-secondary"></i>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div>
+                                                            <h6 class="mb-0">{{ lesson.title }}</h6>
+                                                            <small class="text-muted">{{ lesson.content|truncatechars:50 }}</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    {% if lesson.duration %}
+                                                        <span class="badge bg-light text-dark">
+                                                            <i class="fas fa-clock me-1 text-muted"></i> {{ lesson.duration }} min
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-muted">Not set</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if lesson.is_free %}
+                                                        <span class="badge bg-success">Free Preview</span>
+                                                    {% else %}
+                                                        <span class="badge bg-light text-muted">Premium</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ lesson.created_at|date:"M d, Y" }}</td>
+                                                <td class="text-end pe-3">
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{% url 'courses:lesson' course_slug=course.slug lesson_id=lesson.id %}" class="btn btn-outline-primary" target="_blank">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="#" class="btn btn-outline-primary edit-lesson" data-lesson-id="{{ lesson.id }}">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="#" class="btn btn-outline-danger delete-lesson" data-lesson-id="{{ lesson.id }}" data-title="{{ lesson.title }}">
+                                                            <i class="fas fa-trash"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-book fa-3x text-muted"></i>
+                                </div>
+                                <h5 class="mb-2">No lessons yet</h5>
+                                <p class="text-muted mb-4">Start by adding your first lesson to this course.</p>
+                                <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                                    <i class="fas fa-plus-circle me-1"></i> Add First Lesson
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Add Lesson Modal -->
+                <div class="modal fade" id="addLessonModal" tabindex="-1" aria-labelledby="addLessonModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addLessonModalLabel">Add New Lesson</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="lessonForm" action="{% url 'instructor:add_lesson' course_slug=course.slug %}" method="post">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="lessonTitle" class="form-label">Lesson Title</label>
+                                        <input type="text" class="form-control" id="lessonTitle" name="title" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="lessonContent" class="form-label">Content</label>
+                                        <textarea class="form-control" id="lessonContent" name="content" rows="5" required></textarea>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="lessonOrder" class="form-label">Order</label>
+                                            <input type="number" class="form-control" id="lessonOrder" name="order" value="{{ next_order }}" min="1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="lessonDuration" class="form-label">Duration (minutes)</label>
+                                            <input type="number" class="form-control" id="lessonDuration" name="duration" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="lessonVideo" class="form-label">Video URL (YouTube)</label>
+                                        <input type="url" class="form-control" id="lessonVideo" name="video_url">
+                                        <div class="form-text text-dark">YouTube links will be automatically converted to embedded format.</div>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="lessonFree" name="is_free">
+                                        <label class="form-check-label" for="lessonFree">Make this a free preview lesson</label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="submitLesson">Add Lesson</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Lesson Modal -->
+                <div class="modal fade" id="editLessonModal" tabindex="-1" aria-labelledby="editLessonModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="editLessonModalLabel">Edit Lesson</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editLessonForm" action="" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="editLessonId" name="lesson_id">
+                                    <div class="mb-3">
+                                        <label for="editLessonTitle" class="form-label">Lesson Title</label>
+                                        <input type="text" class="form-control" id="editLessonTitle" name="title" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editLessonContent" class="form-label">Content</label>
+                                        <textarea class="form-control" id="editLessonContent" name="content" rows="5" required></textarea>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="editLessonOrder" class="form-label">Order</label>
+                                            <input type="number" class="form-control" id="editLessonOrder" name="order" min="1">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="editLessonDuration" class="form-label">Duration (minutes)</label>
+                                            <input type="number" class="form-control" id="editLessonDuration" name="duration" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="editLessonVideo" class="form-label">Video URL (YouTube)</label>
+                                        <input type="url" class="form-control" id="editLessonVideo" name="video_url">
+                                        <div class="form-text text-dark">YouTube links will be automatically converted to embedded format.</div>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="editLessonFree" name="is_free">
+                                        <label class="form-check-label" for="editLessonFree">Make this a free preview lesson</label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="updateLesson">Update Lesson</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Lesson Confirmation Modal -->
+                <div class="modal fade" id="deleteLessonModal" tabindex="-1" aria-labelledby="deleteLessonModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteLessonModalLabel">Delete Lesson</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete the lesson "<span id="deleteLessonTitle"></span>"?</p>
+                                <p class="text-danger">This action cannot be undone. All content associated with this lesson will be permanently deleted.</p>
+                                <form id="deleteLessonForm" action="" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="deleteLessonId" name="lesson_id">
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmDeleteLesson">Delete Permanently</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize sortable for lesson reordering
+        const sortableList = document.getElementById('sortableLessons');
+        if (sortableList) {
+            new Sortable(sortableList, {
+                handle: '.handle',
+                animation: 150,
+                onEnd: function(evt) {
+                    updateLessonOrders();
+                }
+            });
+        }
+
+        // Handle lesson form submission
+        document.getElementById('submitLesson').addEventListener('click', function() {
+            document.getElementById('lessonForm').submit();
+        });
+
+        // Handle edit lesson button clicks
+        document.querySelectorAll('.edit-lesson').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lessonId = this.dataset.lessonId;
+                fetchLessonDetails(lessonId);
+            });
+        });
+
+        // Handle update lesson form submission
+        document.getElementById('updateLesson').addEventListener('click', function() {
+            document.getElementById('editLessonForm').submit();
+        });
+
+        // Handle delete lesson button clicks
+        document.querySelectorAll('.delete-lesson').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lessonId = this.dataset.lessonId;
+                const lessonTitle = this.dataset.title;
+                
+                document.getElementById('deleteLessonId').value = lessonId;
+                document.getElementById('deleteLessonTitle').textContent = lessonTitle;
+                document.getElementById('deleteLessonForm').action = `/instructor/courses/{{ course.slug }}/lessons/${lessonId}/delete/`;
+                
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteLessonModal'));
+                deleteModal.show();
+            });
+        });
+
+        // Handle confirm delete button click
+        document.getElementById('confirmDeleteLesson').addEventListener('click', function() {
+            document.getElementById('deleteLessonForm').submit();
+        });
+        
+        // Function to fetch lesson details for editing
+        function fetchLessonDetails(lessonId) {
+            fetch(`/instructor/courses/{{ course.slug }}/lessons/${lessonId}/get/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const lesson = data.lesson;
+                        document.getElementById('editLessonId').value = lesson.id;
+                        document.getElementById('editLessonTitle').value = lesson.title;
+                        document.getElementById('editLessonContent').value = lesson.content;
+                        document.getElementById('editLessonOrder').value = lesson.order;
+                        document.getElementById('editLessonDuration').value = lesson.duration;
+                        document.getElementById('editLessonVideo').value = lesson.video_url;
+                        document.getElementById('editLessonFree').checked = lesson.is_free;
+                        
+                        // Set form action
+                        document.getElementById('editLessonForm').action = `/instructor/courses/{{ course.slug }}/lessons/${lessonId}/edit/`;
+                        
+                        const editModal = new bootstrap.Modal(document.getElementById('editLessonModal'));
+                        editModal.show();
+                    } else {
+                        alert('Error loading lesson details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching lesson details:', error);
+                    alert('An error occurred while loading lesson details');
+                });
+        }
+        
+        // Function to update lesson orders after drag and drop
+        function updateLessonOrders() {
+            const rows = document.querySelectorAll('#sortableLessons tr');
+            const orderData = [];
+            
+            rows.forEach((row, index) => {
+                const lessonId = row.dataset.lessonId;
+                const newOrder = index + 1;
+                
+                // Update displayed order number
+                row.querySelector('.lesson-order').textContent = newOrder;
+                
+                orderData.push({
+                    lesson_id: lessonId,
+                    order: newOrder
+                });
+            });
+            
+            // Send updated order to server
+            fetch(`/instructor/courses/{{ course.slug }}/lessons/reorder/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ orders: orderData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    alert('Error updating lesson order');
+                    // Reload page to restore correct order
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating lesson order:', error);
+                alert('An error occurred while updating lesson order');
+                window.location.reload();
+            });
+        }
+    });
+</script>
+{% endblock %}

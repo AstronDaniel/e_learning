@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}New Discussion | {{ course.title }} | Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .create-header {
+        background: linear-gradient(90deg, rgba(25, 25, 65, 0.9), rgba(40, 40, 80, 0.9)), 
+                    url('{% if course.image %}{{ course.image.url }}{% else %}https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80{% endif %}');
+        background-size: cover;
+        background-position: center;
+        padding: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .create-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI5NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHg9IjAiIHk9IjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDQwTDQwIDBNMCAwTDQwIDQwIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');
+        opacity: 0.4;
+        z-index: 0;
+    }
+    
+    .form-container {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+    
+    .form-control {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        color: var(--text-color);
+    }
+    
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: none;
+        border-color: var(--secondary-color);
+        color: var(--text-color);
+    }
+    
+    .tag-checkbox {
+        display: none;
+    }
+    
+    .tag-label {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        margin: 0.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .tag-checkbox:checked + .tag-label {
+        transform: scale(1.05);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    
+    .tips-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        height: 100%;
+    }
+    
+    .tips-card ul {
+        padding-left: 1.2rem;
+    }
+    
+    .tips-card li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Create Discussion Header -->
+<section class="create-header">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.slug %}" class="text-white-50">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'forums:course_discussions' course.slug %}" class="text-white-50">Forum</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">New Discussion</li>
+                    </ol>
+                </nav>
+                
+                <h1 class="display-5 mb-3">Create New Discussion</h1>
+                <p class="lead mb-0">Share your questions, insights, and start meaningful conversations</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Create Discussion Form -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <form method="POST" action="{% url 'forums:create_discussion' course.slug %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Discussion Title</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="Enter a clear, specific title for your discussion" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="content" class="form-label">Discussion Content</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" placeholder="Describe your question or topic in detail..." required></textarea>
+                        </div>
+                        
+                        {% if tags %}
+                        <div class="mb-4">
+                            <label class="form-label">Tags (Optional)</label>
+                            <div class="tag-container">
+                                {% for tag in tags %}
+                                <div class="form-check form-check-inline">
+                                    <input class="tag-checkbox" type="checkbox" id="tag{{ tag.id }}" name="tags" value="{{ tag.id }}">
+                                    <label class="tag-label" for="tag{{ tag.id }}" style="background-color: {{ tag.color }}20; color: {{ tag.color }}; border: 1px solid {{ tag.color }};">
+                                        {{ tag.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="text-end">
+                            <a href="{% url 'forums:course_discussions' course.slug %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-secondary">
+                                <i class="fas fa-plus-circle me-2"></i> Create Discussion
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="tips-card">
+                    <h5 class="mb-3"><i class="fas fa-lightbulb me-2 text-warning"></i> Tips for a Great Discussion</h5>
+                    <ul class="text-white-50">
+                        <li><strong>Be specific</strong> in your title to attract the right responses.</li>
+                        <li><strong>Provide context</strong> for your question or topic.</li>
+                        <li><strong>Format your content</strong> with paragraphs for readability.</li>
+                        <li><strong>Add relevant tags</strong> to categorize your discussion.</li>
+                        <li><strong>Check existing discussions</strong> to avoid duplicates.</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-card mt-3">
+                    <h5 class="mb-3"><i class="fas fa-code me-2 text-info"></i> Formatting Tips</h5>
+                    <div class="text-white-50">
+                        <p>You can use basic formatting in your discussion:</p>
+                        <ul>
+                            <li>Start a line with <code>#</code> for a heading</li>
+                            <li>Use <code>*text*</code> for <em>italics</em></li>
+                            <li>Use <code>**text**</code> for <strong>bold</strong></li>
+                            <li>Use <code>```code```</code> for code blocks</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

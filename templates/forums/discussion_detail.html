@@ -1,0 +1,635 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ discussion.title }} | Forum | Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .discussion-header {
+        background: linear-gradient(90deg, rgba(25, 25, 65, 0.9), rgba(40, 40, 80, 0.9)), 
+                    url('{% if course.image %}{{ course.image.url }}{% else %}https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80{% endif %}');
+        background-size: cover;
+        background-position: center;
+        padding: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .discussion-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI5NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHg9IjAiIHk9IjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDQwTDQwIDBNMCAwTDQwIDQwIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');
+        opacity: 0.4;
+        z-index: 0;
+    }
+    
+    .forum-container {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+    }
+    
+    .discussion-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    
+    .discussion-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+    }
+    
+    .meta-item {
+        display: flex;
+        align-items: center;
+        margin-right: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .meta-item i {
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .tag {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .reply-container {
+        background: rgba(255, 255, 255, 0.05);
+        border-left: 4px solid var(--border-color);
+        border-radius: 0 10px 10px 0;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .reply-container:hover {
+        background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .reply-header {
+        display: flex;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .reply-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+    }
+    
+    .reply-user {
+        font-weight: 500;
+    }
+    
+    .reply-content {
+        padding: 1.5rem;
+    }
+    
+    .reply-footer {
+        display: flex;
+        align-items: center;
+        padding: 0 1.5rem 1rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+    }
+    
+    .reply-actions {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
+    }
+    
+    .reply-action {
+        margin-left: 1rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .reply-action:hover {
+        color: var(--text-color);
+    }
+    
+    .reply-form {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .avatar-md {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .reply-form textarea {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        color: var(--text-color);
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .reply-form textarea:focus {
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: none;
+        border-color: var(--secondary-color);
+    }
+    
+    .reply-container.solution {
+        border-left: 4px solid #198754;
+        background: rgba(25, 135, 84, 0.07);
+    }
+    
+    .solution-badge {
+        background-color: rgba(25, 135, 84, 0.15);
+        color: #1ddb76;
+        border: 1px solid rgba(25, 135, 84, 0.3);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .solution-badge i {
+        margin-right: 0.5rem;
+    }
+    
+    .nested-replies {
+        margin-left: 2rem;
+        border-left: 2px solid var(--border-color);
+        padding-left: 1rem;
+    }
+    
+    .reply-indicator {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 5px;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        margin-right: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .status-badge i {
+        margin-right: 0.5rem;
+    }
+    
+    .status-badge.closed {
+        background-color: rgba(108, 117, 125, 0.15);
+        color: #a4b0be;
+        border: 1px solid rgba(108, 117, 125, 0.3);
+    }
+    
+    .status-badge.pinned {
+        background-color: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Discussion Header -->
+<section class="discussion-header">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.slug %}" class="text-white-50">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'forums:course_discussions' course.slug %}" class="text-white-50">Forum</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ discussion.title }}</li>
+                    </ol>
+                </nav>
+                
+                <h1 class="mb-3">{{ discussion.title }}</h1>
+                
+                <div class="d-flex flex-wrap align-items-center mb-2">
+                    {% if discussion.is_pinned %}
+                    <span class="status-badge pinned">
+                        <i class="fas fa-thumbtack"></i> Pinned
+                    </span>
+                    {% endif %}
+                    
+                    {% if discussion.is_closed %}
+                    <span class="status-badge closed">
+                        <i class="fas fa-lock"></i> Closed
+                    </span>
+                    {% endif %}
+                    
+                    {% if discussion.has_solution %}
+                    <span class="solution-badge">
+                        <i class="fas fa-check-circle"></i> Solved
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="discussion-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <span>{{ discussion.user.username }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ discussion.date_posted|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-comments"></i>
+                        <span>{{ discussion.reply_count }} {% if discussion.reply_count == 1 %}reply{% else %}replies{% endif %}</span>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-eye"></i>
+                        <span>{{ discussion.views }} {% if discussion.views == 1 %}view{% else %}views{% endif %}</span>
+                    </div>
+                </div>
+                
+                {% if tags %}
+                <div>
+                    {% for tagging in tags %}
+                    <span class="tag" style="background-color: {{ tagging.tag.color }}20; color: {{ tagging.tag.color }}; border: 1px solid {{ tagging.tag.color }};">{{ tagging.tag.name }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-4 text-lg-end d-flex justify-content-end align-items-start mt-4 mt-lg-0">
+                <!-- Discussion Actions Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="discussionActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end bg-dark border-secondary" aria-labelledby="discussionActionsDropdown">
+                        {% if request.user == discussion.user or is_instructor %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'forums:edit_discussion' course.slug discussion.slug %}">
+                                <i class="fas fa-edit me-2"></i> Edit
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'forums:delete_discussion' course.slug discussion.slug %}">
+                                <i class="fas fa-trash me-2"></i> Delete
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        {% endif %}
+                        
+                        {% if request.user == discussion.user or is_instructor %}
+                        <li>
+                            <button class="dropdown-item toggle-closed" data-url="{% url 'forums:toggle_closed' course.slug discussion.slug %}">
+                                {% if discussion.is_closed %}
+                                <i class="fas fa-lock-open me-2"></i> Reopen Discussion
+                                {% else %}
+                                <i class="fas fa-lock me-2"></i> Close Discussion
+                                {% endif %}
+                            </button>
+                        </li>
+                        {% endif %}
+                        
+                        {% if is_instructor %}
+                        <li>
+                            <button class="dropdown-item toggle-pinned" data-url="{% url 'forums:toggle_pinned' course.slug discussion.slug %}">
+                                {% if discussion.is_pinned %}
+                                <i class="fas fa-thumbtack me-2"></i> Unpin Discussion
+                                {% else %}
+                                <i class="fas fa-thumbtack me-2"></i> Pin Discussion
+                                {% endif %}
+                            </button>
+                        </li>
+                        {% endif %}
+                        
+                        <li>
+                            <a class="dropdown-item" href="{% url 'forums:course_discussions' course.slug %}">
+                                <i class="fas fa-arrow-left me-2"></i> Back to All Discussions
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Discussion Content -->
+<section class="py-5">
+    <div class="container">
+        <!-- Original Post -->
+        <div class="forum-container p-4 mb-4">
+            <div class="discussion-content">
+                {{ discussion.content|linebreaks }}
+            </div>
+        </div>
+        
+        <!-- Replies Section -->
+        <h4 class="mb-4">Replies <span class="text-secondary">({{ discussion.reply_count }})</span></h4>
+        
+        {% if replies %}
+        <div id="replies-container">
+            {% for reply in replies %}
+            <div class="reply-container {% if reply.is_solution %}solution{% endif %}" id="reply-{{ reply.id }}">
+                <div class="reply-header">
+                    <img src="{{ reply.user.profile.avatar.url }}" alt="{{ reply.user.username }}" class="reply-avatar">
+                    <div>
+                        <div class="reply-user">{{ reply.user.username }}</div>
+                        <div class="small text-white-50">{{ reply.date_posted|date:"M d, Y H:i" }}</div>
+                    </div>
+                    {% if reply.is_solution %}
+                    <div class="solution-badge ms-auto">
+                        <i class="fas fa-check-circle"></i> Solution
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="reply-content">
+                    {% if reply.parent %}
+                    <div class="reply-indicator">
+                        <i class="fas fa-reply me-2"></i> Replying to {{ reply.parent.user.username }}
+                    </div>
+                    {% endif %}
+                    
+                    {{ reply.content|linebreaks }}
+                </div>
+                
+                <div class="reply-footer">
+                    {% if reply.is_edited %}
+                    <span><i class="fas fa-edit me-1"></i> Edited</span>
+                    {% endif %}
+                    
+                    <div class="reply-actions">
+                        {% if not discussion.is_closed %}
+                        <button class="btn btn-link reply-action" onclick="replyTo('{{ reply.user.username }}', {{ reply.id }})">
+                            <i class="fas fa-reply me-1"></i> Reply
+                        </button>
+                        {% endif %}
+                        
+                        {% if request.user == reply.user or is_instructor %}
+                        <a href="{% url 'forums:edit_reply' course.slug discussion.slug reply.id %}" class="reply-action">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                        <a href="{% url 'forums:delete_reply' course.slug discussion.slug reply.id %}" class="reply-action">
+                            <i class="fas fa-trash me-1"></i> Delete
+                        </a>
+                        {% endif %}
+                        
+                        {% if request.user == discussion.user or is_instructor %}
+                        <button class="btn btn-link reply-action mark-solution" data-url="{% url 'forums:mark_solution' course.slug discussion.slug reply.id %}">
+                            {% if reply.is_solution %}
+                            <i class="far fa-check-circle me-1"></i> Unmark as Solution
+                            {% else %}
+                            <i class="far fa-check-circle me-1"></i> Mark as Solution
+                            {% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Nested Replies -->
+                {% if reply.children.exists %}
+                <div class="nested-replies">
+                    {% for child_reply in reply.children.all %}
+                    <div class="reply-container" id="reply-{{ child_reply.id }}">
+                        <div class="reply-header">
+                            <img src="{{ child_reply.user.profile.avatar.url }}" alt="{{ child_reply.user.username }}" class="reply-avatar">
+                            <div>
+                                <div class="reply-user">{{ child_reply.user.username }}</div>
+                                <div class="small text-white-50">{{ child_reply.date_posted|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="reply-content">
+                            <div class="reply-indicator">
+                                <i class="fas fa-reply me-2"></i> Replying to {{ reply.user.username }}
+                            </div>
+                            
+                            {{ child_reply.content|linebreaks }}
+                        </div>
+                        
+                        <div class="reply-footer">
+                            {% if child_reply.is_edited %}
+                            <span><i class="fas fa-edit me-1"></i> Edited</span>
+                            {% endif %}
+                            
+                            <div class="reply-actions">
+                                {% if request.user == child_reply.user or is_instructor %}
+                                <a href="{% url 'forums:edit_reply' course.slug discussion.slug child_reply.id %}" class="reply-action">
+                                    <i class="fas fa-edit me-1"></i> Edit
+                                </a>
+                                <a href="{% url 'forums:delete_reply' course.slug discussion.slug child_reply.id %}" class="reply-action">
+                                    <i class="fas fa-trash me-1"></i> Delete
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-white-50">
+            <i class="far fa-comments fa-3x mb-3"></i>
+            <h5>No replies yet</h5>
+            <p>Be the first to reply to this discussion!</p>
+        </div>
+        {% endif %}
+        
+        <!-- Reply Form -->
+        {% if can_reply %}
+        <div class="reply-form" id="reply-form">
+            <form method="POST" action="{% url 'forums:discussion_detail' course.slug discussion.slug %}">
+                {% csrf_token %}
+                <div class="d-flex mb-3">
+                    <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}" class="avatar-md me-3">
+                    <div class="flex-grow-1">
+                        <h5 class="mb-0">{{ request.user.username }}</h5>
+                        <div class="text-white-50 small">Posting as yourself</div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="content" class="form-label">Your Reply</label>
+                    <textarea name="content" id="content" class="form-control" rows="5" required></textarea>
+                </div>
+                
+                <input type="hidden" name="parent_id" id="parent_id" value="">
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div id="reply-to-info" class="d-none">
+                        <span class="text-secondary"><i class="fas fa-reply me-2"></i> Replying to <span id="reply-to-username"></span></span>
+                        <button type="button" class="btn btn-link text-secondary p-0 ms-2" onclick="cancelReply()">Cancel</button>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-paper-plane me-2"></i> Post Reply
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div class="alert alert-secondary text-center">
+            <i class="fas fa-lock me-2"></i> This discussion is closed and no longer accepts new replies.
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to handle mark as solution
+        const solutionButtons = document.querySelectorAll('.mark-solution');
+        solutionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const url = this.dataset.url;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'marked') {
+                        // Refresh the page to show changes
+                        window.location.reload();
+                    } else if (data.status === 'unmarked') {
+                        // Refresh the page to show changes
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+        
+        // Toggle closed/open status
+        const toggleClosedButton = document.querySelector('.toggle-closed');
+        if (toggleClosedButton) {
+            toggleClosedButton.addEventListener('click', function() {
+                const url = this.dataset.url;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'closed' || data.status === 'opened') {
+                        // Refresh the page to show changes
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+        
+        // Toggle pinned status
+        const togglePinnedButton = document.querySelector('.toggle-pinned');
+        if (togglePinnedButton) {
+            togglePinnedButton.addEventListener('click', function() {
+                const url = this.dataset.url;
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'pinned' || data.status === 'unpinned') {
+                        // Refresh the page to show changes
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+    });
+    
+    // Function to get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Function to handle replying to a specific comment
+    function replyTo(username, replyId) {
+        document.getElementById('parent_id').value = replyId;
+        document.getElementById('reply-to-username').textContent = username;
+        document.getElementById('reply-to-info').classList.remove('d-none');
+        
+        // Scroll to reply form
+        document.getElementById('reply-form').scrollIntoView({behavior: 'smooth'});
+        
+        // Focus on textarea
+        document.getElementById('content').focus();
+    }
+    
+    // Function to cancel reply to specific comment
+    function cancelReply() {
+        document.getElementById('parent_id').value = '';
+        document.getElementById('reply-to-info').classList.add('d-none');
+    }
+</script>
+{% endblock %}

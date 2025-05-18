@@ -1,0 +1,620 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load course_filters %}
+
+{% block title %}{{ lesson.title }} - {{ course.title }} | Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .lesson-header {
+        background: linear-gradient(90deg, rgba(25, 25, 65, 0.9), rgba(40, 40, 80, 0.9)), 
+                    url('{% if course.image %}{{ course.image.url }}{% else %}https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80{% endif %}');
+        background-size: cover;
+        background-position: center;
+        padding: 2rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .lesson-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI5NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHg9IjAiIHk9IjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDQwTDQwIDBNMCAwTDQwIDQwIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');
+        opacity: 0.4;
+        z-index: 0;
+    }
+    
+    .lesson-card {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    
+    .lesson-progress {
+        width: 100%;
+        height: 5px;
+        background-color: rgba(255, 255, 255, 0.1);
+        position: relative;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .lesson-progress-bar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: linear-gradient(90deg, var(--secondary-color), var(--secondary-color-light));
+        border-radius: 5px;
+    }
+    
+    .lesson-sidebar {
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(13, 232, 236, 0.5) rgba(255, 255, 255, 0.1);
+    }
+    
+    .lesson-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .lesson-sidebar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+    
+    .lesson-sidebar::-webkit-scrollbar-thumb {
+        background-color: rgba(13, 232, 236, 0.5);
+        border-radius: 10px;
+    }
+    
+    .lesson-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .lesson-item {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .lesson-item:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .lesson-item.active {
+        background: rgba(13, 232, 236, 0.1);
+        border-left: 3px solid var(--secondary-color);
+    }
+    
+    .lesson-item.completed {
+        position: relative;
+    }
+    
+    .lesson-item.completed h6 {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .lesson-navigation {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        margin-top: 2rem;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .lesson-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    
+    .lesson-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+    }
+    
+    .lesson-content h1, .lesson-content h2, .lesson-content h3, 
+    .lesson-content h4, .lesson-content h5, .lesson-content h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .lesson-content pre {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        border-radius: 10px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+    }
+    
+    .lesson-content blockquote {
+        border-left: 4px solid var(--secondary-color);
+        padding-left: 1rem;
+        margin-left: 0;
+        color: var(--text-secondary);
+    }
+    
+    .lesson-content ul, .lesson-content ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .lesson-content table {
+        width: 100%;
+        margin-bottom: 1.5rem;
+        border-collapse: collapse;
+    }
+    
+    .lesson-content table th, .lesson-content table td {
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .lesson-content table th {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .lesson-notes-form textarea {
+        height: 150px;
+        resize: vertical;
+        background-color: rgba(255, 255, 255, 0.05);
+        border-color: var(--border-color);
+        color: var(--text-color);
+    }
+    
+    .lesson-notes-form textarea:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 0 0.25rem rgba(13, 232, 236, 0.25);
+        color: var(--text-color);
+    }
+    
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        height: 0;
+        overflow: hidden;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        background: #000;
+    }
+    
+    .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+    
+    .sticky-top-lesson {
+        position: sticky;
+        top: 20px;
+    }
+    
+    .course-info-pill {
+        display: inline-flex;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .course-info-pill i {
+        margin-right: 0.5rem;
+        opacity: 0.8;
+    }
+    
+    .course-completion-card {
+        background: rgba(13, 232, 236, 0.1);
+        border: 1px solid rgba(13, 232, 236, 0.3);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+    }
+    
+    .tab-content {
+        min-height: 350px;
+    }
+    
+    .resource-card {
+        display: block;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--text-color);
+    }
+    
+    .resource-card:hover {
+        transform: translateY(-3px);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        color: var(--text-color);
+    }
+    
+    .resource-icon {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Lesson Header -->
+<section class="lesson-header">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-9">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-3">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'courses:list' %}" class="text-white-50">Courses</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'courses:detail' course.slug %}" class="text-white-50">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ lesson.title }}</li>
+                    </ol>
+                </nav>
+                
+                <div class="mb-3">
+                    <span class="course-info-pill">
+                        <i class="fas fa-book"></i> Lesson {{ lesson.order|add:"1" }} of {{ course.lessons.count }}
+                    </span>
+                    <span class="course-info-pill">
+                        <i class="fas fa-clock"></i> {{ lesson.duration }} min
+                    </span>
+                    {% if lesson.video_url %}
+                    <span class="course-info-pill">
+                        <i class="fas fa-video"></i> Video Lesson
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <h1 class="display-6 fw-bold text-white mb-1">{{ lesson.title }}</h1>
+                <div class="d-flex align-items-center text-white-50">
+                    <span>Course:</span>
+                    <a href="{% url 'courses:detail' course.slug %}" class="ms-2 text-secondary">{{ course.title }}</a>
+                </div>
+            </div>
+            <div class="col-lg-3 text-end">
+                <form method="POST" action="{% url 'courses:mark_complete' course.slug lesson.id %}">
+                    {% csrf_token %}
+                    {% if is_completed %}
+                        <button type="submit" class="btn btn-secondary" name="mark_incomplete">
+                            <i class="fas fa-check-circle me-2"></i> Mark as Incomplete
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-secondary" name="mark_complete">
+                            <i class="fas fa-check me-2"></i> Mark as Complete
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Lesson Content -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Main Content -->
+            <div class="col-lg-8">
+                <div class="lesson-card p-4 mb-4" data-aos="fade-up">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between text-white-50 small mb-2">
+                                <div>Overall Course Progress</div>
+                                <div>{{ course_progress }}% Complete</div>
+                            </div>
+                            <div class="lesson-progress">
+                                <div class="lesson-progress-bar" style="width: {{ course_progress }}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <ul class="nav nav-tabs border-0 mb-4" id="lessonTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" 
+                                   type="button" role="tab" aria-controls="content" aria-selected="true">
+                                <i class="fas fa-book-open me-2"></i> Lesson Content
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" 
+                                   type="button" role="tab" aria-controls="notes" aria-selected="false">
+                                <i class="fas fa-sticky-note me-2"></i> Your Notes
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources" 
+                                   type="button" role="tab" aria-controls="resources" aria-selected="false">
+                                <i class="fas fa-file-download me-2"></i> Resources
+                                {% if lesson.resources.count > 0 %}
+                                    <span class="badge bg-secondary ms-1">{{ lesson.resources.count }}</span>
+                                {% endif %}
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content" id="lessonTabsContent">                        <!-- Lesson Content Tab -->
+                        <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="content-tab">
+                            {% if lesson.video_url %}
+                                <div class="video-container mb-4">
+                                    <iframe src="{{ lesson.get_youtube_embed_url }}" 
+                                            title="{{ lesson.title }}" 
+                                            frameborder="0" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allowfullscreen></iframe>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="lesson-content">
+                                {{ lesson.content|safe }}
+                            </div>
+                            
+                            {% if is_last_lesson and not course_completed %}
+                                <div class="course-completion-card" data-aos="fade-up">
+                                    <div class="display-6 mb-3">🎉 Congratulations!</div>
+                                    <h4 class="mb-3">You've reached the end of this course</h4>
+                                    <p class="mb-4">You've completed the last lesson. Mark this lesson as complete to finish the course and receive your certificate.</p>
+                                    {% if not is_completed %}
+                                        <form method="POST" action="{% url 'courses:mark_complete' course.slug lesson.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-lg btn-secondary" name="mark_complete">
+                                                <i class="fas fa-award me-2"></i> Complete Course & Get Certificate
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <a href="{% url 'courses:certificate' course.slug %}" class="btn btn-lg btn-secondary">
+                                            <i class="fas fa-certificate me-2"></i> View Your Certificate
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="lesson-navigation">
+                                <div>
+                                    {% if prev_lesson %}
+                                        <a href="{% url 'courses:lesson' course.slug prev_lesson.id %}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left me-2"></i> Previous Lesson
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    {% if next_lesson %}
+                                        <a href="{% url 'courses:lesson' course.slug next_lesson.id %}" class="btn btn-secondary">
+                                            Next Lesson <i class="fas fa-arrow-right ms-2"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notes Tab -->
+                        <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                            <form class="lesson-notes-form" method="POST" action="{% url 'courses:save_note' course.slug lesson.id %}">
+                                {% csrf_token %}
+                                <div class="form-group mb-3">
+                                    <label for="notes" class="form-label">Your Notes for this Lesson</label>
+                                    <textarea id="notes" name="note_content" class="form-control" rows="10">{{ lesson_note.content|default:"" }}</textarea>
+                                    <small class="text-white-50">Your notes are private and only visible to you</small>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-secondary">
+                                        <i class="fas fa-save me-2"></i> Save Notes
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div class="text-center text-white-50 mt-4">
+                                <p>
+                                    <i class="fas fa-lightbulb me-2"></i>
+                                    Tip: Taking notes while learning can improve retention by up to 30%
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Resources Tab -->
+                        <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+                            {% if lesson.resources.count > 0 %}
+                                <h5 class="mb-4">Downloadable Resources</h5>
+                                
+                                {% for resource in lesson.resources.all %}
+                                    <a href="{{ resource.file.url }}" download class="resource-card d-flex align-items-center">
+                                        <span class="resource-icon">
+                                            {% if resource.file.name|lower|endswith:".pdf" %}
+                                                <i class="fas fa-file-pdf text-danger"></i>
+                                            {% elif resource.file.name|lower|endswith:".doc" or resource.file.name|lower|endswith:".docx" %}
+                                                <i class="fas fa-file-word text-primary"></i>
+                                            {% elif resource.file.name|lower|endswith:".xls" or resource.file.name|lower|endswith:".xlsx" %}
+                                                <i class="fas fa-file-excel text-success"></i>
+                                            {% elif resource.file.name|lower|endswith:".zip" or resource.file.name|lower|endswith:".rar" %}
+                                                <i class="fas fa-file-archive text-warning"></i>
+                                            {% elif resource.file.name|lower|endswith:".jpg" or resource.file.name|lower|endswith:".png" or resource.file.name|lower|endswith:".gif" %}
+                                                <i class="fas fa-file-image text-info"></i>
+                                            {% else %}
+                                                <i class="fas fa-file-alt text-secondary"></i>
+                                            {% endif %}
+                                        </span>
+                                        <div>
+                                            <h6 class="mb-1">{{ resource.title }}</h6>
+                                            <div class="small text-white-50">
+                                                <span>{{ resource.file.size|filesizeformat }}</span>
+                                                <span class="ms-2">{{ resource.file_type }}</span>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <div class="mb-3" style="font-size: 3rem; opacity: 0.4;">
+                                        <i class="fas fa-file-download"></i>
+                                    </div>
+                                    <h5>No Resources Available</h5>
+                                    <p class="text-white-50">The instructor hasn't added any downloadable resources for this lesson yet.</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mt-4">
+                                <h5 class="mb-3">Additional Learning</h5>
+                                <div class="resource-card d-flex align-items-center">
+                                    <span class="resource-icon">
+                                        <i class="fas fa-link text-secondary"></i>
+                                    </span>
+                                    <div>
+                                        <h6 class="mb-1">Course Discussion Forum</h6>
+                                        <p class="mb-0 small text-white-50">Have questions? Visit the discussion forum to interact with other students.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if related_lessons %}
+                <div class="lesson-card p-4" data-aos="fade-up" data-aos-delay="100">
+                    <h5 class="mb-3">You May Also Like</h5>
+                    
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        {% for rel_lesson in related_lessons %}
+                            <div class="col">
+                                <a href="{% url 'courses:lesson' course.slug rel_lesson.id %}" class="card border-0 h-100 bg-transparent">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ rel_lesson.title }}</h6>
+                                        <div class="d-flex text-white-50 small">
+                                            <span><i class="fas fa-clock me-1"></i> {{ rel_lesson.duration }} min</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="sticky-top-lesson">
+                    <div class="lesson-card mb-4" data-aos="fade-left">
+                        <div class="p-4 mb-3 border-bottom border-dark">
+                            <h5 class="mb-0">Course Curriculum</h5>
+                        </div>
+                        <div class="lesson-sidebar">
+                            <ul class="lesson-list">
+                                {% for curr_lesson in course.lessons.all|dictsort:"order" %}
+                                    <li class="lesson-item {% if curr_lesson.id == lesson.id %}active{% endif %} {% if curr_lesson in completed_lessons %}completed{% endif %}">
+                                        <a href="{% url 'courses:lesson' course.slug curr_lesson.id %}" class="text-decoration-none text-reset">
+                                            <div class="d-flex align-items-start">
+                                                <div class="me-3 pt-1">
+                                                    {% if curr_lesson in completed_lessons %}
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    {% else %}
+                                                        <i class="far fa-circle text-white-50"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">{{ curr_lesson.title }}</h6>
+                                                    <div class="d-flex text-white-50 small">
+                                                        {% if curr_lesson.video_url %}
+                                                            <span><i class="fas fa-video me-1"></i> Video</span>
+                                                        {% else %}
+                                                            <span><i class="fas fa-file-alt me-1"></i> Text</span>
+                                                        {% endif %}
+                                                        <span class="ms-2"><i class="fas fa-clock me-1"></i> {{ curr_lesson.duration }} min</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="lesson-card p-4" data-aos="fade-left" data-aos-delay="100">
+                        <h5 class="mb-3">About this Course</h5>
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="{{ course.instructor.profile.avatar.url|default:'https://via.placeholder.com/60' }}" 
+                                 class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;" alt="{{ course.instructor }}">
+                            <div>
+                                <h6 class="mb-0">{{ course.instructor.get_full_name|default:course.instructor.username }}</h6>
+                                <div class="text-white-50 small">Instructor</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-book-open me-2 text-secondary"></i>
+                                <span>{{ course.lessons.count }} lessons</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-clock me-2 text-secondary"></i>
+                                <span>{{ course.duration }} total hours</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-signal me-2 text-secondary"></i>
+                                <span>{{ course.get_level_display }}</span>
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'courses:detail' course.slug %}" class="btn btn-outline-secondary d-block">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Course
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab persistence
+        const activeTab = localStorage.getItem('lesson-active-tab');
+        if (activeTab) {
+            const tab = document.querySelector(`#${activeTab}-tab`);
+            if (tab) {
+                tab.click();
+            }
+        }
+        
+        // Store active tab in local storage when changed
+        document.querySelectorAll('#lessonTabs button[data-bs-toggle="tab"]').forEach(tab => {
+            tab.addEventListener('shown.bs.tab', function(e) {
+                const id = e.target.id.replace('-tab', '');
+                localStorage.setItem('lesson-active-tab', id);
+            });
+        });
+        
+        // Auto-expand the current lesson in the sidebar
+        const activeLesson = document.querySelector('.lesson-item.active');
+        if (activeLesson) {
+            activeLesson.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    });
+</script>
+{% endblock %}

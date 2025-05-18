@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instructor Dashboard | E-Learning Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">        <!-- Instructor Sidebar -->
+        <div class="col-lg-2 bg-dark text-white px-0 border-end">
+            <div class="d-flex flex-column min-vh-100 p-3">
+                <h5 class="my-3 text-center" style="color: var(--primary-color);">Instructor Dashboard</h5>
+                <hr class="text-white-50">
+                
+                <ul class="nav nav-pills flex-column mb-auto">
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:dashboard' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'dashboard' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-home me-2" style="color: var(--primary-color);"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:courses' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'courses' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'courses' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-book me-2" style="color: var(--primary-color);"></i>
+                            Courses
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:quizzes' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'quizzes' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'quizzes' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-question-circle me-2" style="color: var(--primary-color);"></i>
+                            Quizzes
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:analytics' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'analytics' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-chart-bar me-2" style="color: var(--primary-color);"></i>
+                            Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item mb-1">
+                        <a href="{% url 'instructor:forums' %}" class="nav-link text-white {% if request.resolver_match.url_name == 'forums' %}active{% endif %}" style="{% if not request.resolver_match.url_name == 'forums' %}color: var(--light-color) !important;{% endif %}">
+                            <i class="fas fa-comments me-2" style="color: var(--primary-color);"></i>
+                            Forums
+                        </a>
+                    </li>
+                </ul>
+                
+                <hr class="text-white-50">
+                
+                <div class="mt-auto text-center">
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Site
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-lg-10 ms-auto p-0">
+            <div class="content-wrapper p-4">
+
+<!-- Dashboard Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>            <h1 class="h2 mb-1">Instructor Dashboard</h1>
+            <p class="text-dark fw-medium">Welcome back, {{ request.user.get_full_name|default:request.user.username }}!</p>
+        </div>
+        <div class="d-flex">
+            <a href="{% url 'courses:create' %}" class="btn btn-primary me-2">
+                <i class="fas fa-plus-circle me-2"></i>New Course
+            </a>
+            <a href="{% url 'quizzes:select_course' %}" class="btn btn-outline-primary">
+                <i class="fas fa-plus-circle me-2"></i>New Quiz
+            </a>
+        </div>
+    </div>    <!-- Stats Overview -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
+                            <i class="fas fa-users fa-2x text-primary"></i>
+                        </div>
+                    </div>                    <h3 class="card-title display-5 fw-bold mb-0">{{ total_students|default:"0" }}</h3>
+                    <p class="text-dark">Active Students</p>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
+                            <i class="fas fa-book fa-2x text-success"></i>
+                        </div>
+                    </div>                    <h3 class="card-title display-5 fw-bold mb-0">{{ total_courses|default:"0" }}</h3>
+                    <p class="text-dark">Active Courses</p>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
+                            <i class="fas fa-question-circle fa-2x text-warning"></i>
+                        </div>
+                    </div>                    <h3 class="card-title display-5 fw-bold mb-0">{{ total_quizzes|default:"0" }}</h3>
+                    <p class="text-dark">Total Quizzes</p>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="card stat-card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center mb-3">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
+                            <i class="fas fa-comments fa-2x text-info"></i>
+                        </div>
+                    </div>                    <h3 class="card-title display-5 fw-bold mb-0">{{ total_discussions|default:"0" }}</h3>
+                    <p class="text-dark">Forum Discussions</p>
+                    <div class="progress mt-3" style="height: 4px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Sections -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Courses Overview -->            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h5 class="card-title mb-0 fw-bold">
+                        <i class="fas fa-graduation-cap text-primary me-2"></i>Your Courses
+                    </h5>
+                    <a href="{% url 'instructor:courses' %}" class="btn btn-sm btn-primary rounded-pill px-3">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    {% if courses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Course</th>
+                                        <th>Students</th>
+                                        <th>Completion Rate</th>
+                                        <th class="pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for course in courses|slice:":5" %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                {% if course.cover_image %}
+                                                    <div class="rounded-3 overflow-hidden me-3" style="width: 54px; height: 54px;">
+                                                        <img src="{{ course.cover_image.url }}" alt="{{ course.title }}" class="w-100 h-100 object-fit-cover">
+                                                    </div>
+                                                {% else %}
+                                                    <div class="bg-primary bg-opacity-10 rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+                                                        <i class="fas fa-book-open text-primary fa-lg"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0 fw-semibold">{{ course.title }}</h6>
+                                                    <div class="d-flex align-items-center mt-1">
+                                                        <span class="badge bg-light text-dark me-2"><i class="far fa-calendar-alt me-1 text-muted"></i> 
+                                                            {% if course.created_at %}{{ course.created_at|date:"M Y" }}{% else %}Active{% endif %}
+                                                        </span>
+                                                        <span class="badge bg-light text-dark"><i class="fas fa-users me-1 text-muted"></i> {{ course.student_count }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-success bg-opacity-10 rounded-pill p-1 px-2 d-inline-flex align-items-center">
+                                                    <i class="fas fa-user-graduate text-success me-1 small"></i>
+                                                    <span class="fw-medium">{{ course.student_count }}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 rounded-pill" style="height: 8px; width: 100px;">
+                                                    <div class="progress-bar bg-success rounded-pill" role="progressbar" 
+                                                        style="width: {{ course.completion_rate|default:0 }}%"></div>
+                                                </div>
+                                                <span class="ms-2 fw-semibold">{{ course.completion_rate|default:0|floatformat:1 }}%</span>
+                                            </div>
+                                        </td>
+                                        <td class="pe-4">
+                                            <div class="btn-group btn-group-sm shadow-sm">
+                                                <a href="{% url 'instructor:course_detail' course_slug=course.slug %}" 
+                                                   class="btn btn-primary">
+                                                    <i class="fas fa-cog me-1"></i> Manage
+                                                </a>
+                                                <a href="{% url 'courses:detail' slug=course.slug %}" 
+                                                   class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i> View
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4 rounded-circle bg-light d-inline-flex align-items-center justify-content-center" style="width: 96px; height: 96px;">
+                                <i class="fas fa-book fa-3x text-primary opacity-50"></i>
+                            </div>
+                            <h5 class="fw-bold">No courses yet</h5>
+                            <p class="text-muted mb-4">Start by creating your first course</p>
+                            <a href="{% url 'courses:create' %}" class="btn btn-primary px-4 rounded-pill">
+                                <i class="fas fa-plus-circle me-2"></i>Create Course
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quiz Performance -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Quiz Performance</h5>
+                    <a href="{% url 'instructor:quizzes' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if quiz_performance.total_attempts > 0 %}                <div class="row align-items-center">
+                            <div class="col-md-4 text-center mb-3 mb-md-0">
+                                <div class="display-4 fw-bold text-primary">{{ quiz_performance.avg_score|floatformat:1 }}%</div>
+                                <p class="text-muted mb-0">Average Score</p>
+                                <div class="mt-3 d-flex justify-content-center">                                <div class="position-relative" style="width: 120px; height: 120px;">
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <span class="h3 fw-bold mb-0">{{ quiz_performance.avg_score|default:"0"|floatformat:0 }}%</span>
+                                        </div>
+                                        <!-- Simple circular progress bar without complex calculations -->
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 rounded-circle"
+                                             style="background: conic-gradient(#4e73df {% if quiz_performance.avg_score %}{{ quiz_performance.avg_score|floatformat:0 }}{% else %}0{% endif %}%, #e9ecef 0%);"></div>
+                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                            <div class="bg-white rounded-circle" style="width: 70%; height: 70%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="fw-bold mb-3">Recent Quiz Attempts</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm rounded overflow-hidden">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Student</th>
+                                                <th>Quiz</th>
+                                                <th>Score</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for attempt in recent_quiz_attempts|slice:":5" %}
+                                            <tr>
+                                                <td>{{ attempt.user.get_full_name|default:attempt.user.username }}</td>
+                                                <td>{{ attempt.quiz.title }}</td>
+                                                <td>
+                                                    <span class="badge {% if attempt.score >= attempt.quiz.passing_score %}bg-success{% else %}bg-danger{% endif %} rounded-pill">
+                                                        {{ attempt.score }}%
+                                                    </span>
+                                                </td>
+                                                <td>{{ attempt.started_at|date:"M d, Y" }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <h5>No quiz attempts yet</h5>
+                            <p class="text-muted">Student performance data will appear here once students take your quizzes</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">            <!-- Recent Activity -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-bell text-primary me-2"></i>Recent Activity
+                        </h5>
+                        <span class="badge rounded-pill bg-primary">New</span>
+                    </div>
+                </div>
+                <div class="card-body px-0">
+                    {% if recent_enrollments or recent_discussions %}
+                        <div class="position-relative">
+                            <div class="position-absolute h-100" style="width: 2px; background-color: #e9ecef; left: 24px;"></div>
+                            {% for enrollment in recent_enrollments|slice:":3" %}
+                                <div class="d-flex ps-3 pe-4 py-3 position-relative">
+                                    <div class="position-absolute" style="left: 18px; width: 14px; height: 14px; border-radius: 50%; background-color: #4e73df; top: 24px; z-index: 1;"></div>
+                                    <div class="bg-primary rounded p-3 text-white d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px;">
+                                        <i class="fas fa-user-graduate"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">New Enrollment</h6>
+                                        <p class="mb-1">{{ enrollment.user.get_full_name|default:enrollment.user.username }} enrolled in <span class="fw-medium">{{ enrollment.course.title }}</span></p>
+                                        <div class="text-muted small"><i class="far fa-clock me-1"></i>{{ enrollment.date_enrolled|timesince }} ago</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            
+                            {% for discussion in recent_discussions|slice:":3" %}
+                                <div class="d-flex ps-3 pe-4 py-3 position-relative">
+                                    <div class="position-absolute" style="left: 18px; width: 14px; height: 14px; border-radius: 50%; background-color: #1cc88a; top: 24px; z-index: 1;"></div>
+                                    <div class="bg-success rounded p-3 text-white d-flex align-items-center justify-content-center me-3" style="width: 42px; height: 42px;">
+                                        <i class="fas fa-comment-alt"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">New Discussion</h6>
+                                        <p class="mb-1">{{ discussion.user.get_full_name|default:discussion.user.username }} posted in <span class="fw-medium">{{ discussion.course.title }}</span></p>
+                                        <div class="text-muted small"><i class="far fa-clock me-1"></i>{{ discussion.date_posted|timesince }} ago</div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3 text-muted">
+                                <i class="fas fa-bell fa-3x opacity-50"></i>
+                            </div>
+                            <h6 class="fw-bold">No recent activity</h6>
+                            <p class="text-muted">When you get new enrollments or forum posts, they'll appear here</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>            <!-- Quick Links -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 fw-bold">
+                            <i class="fas fa-bolt text-warning me-2"></i>Quick Actions
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'courses:create' %}" class="list-group-item list-group-item-action d-flex align-items-center px-4 py-3 border-0 border-bottom">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-plus-circle text-primary"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">Create New Course</h6>
+                                <small class="text-secondary">Add a new course to your teaching portfolio</small>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        <a href="{% url 'quizzes:select_course' %}" class="list-group-item list-group-item-action d-flex align-items-center px-4 py-3 border-0 border-bottom">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-warning bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-question-circle text-warning"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">Create New Quiz</h6>
+                                <small class="text-secondary">Add assessments to your courses</small>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        <a href="{% url 'instructor:analytics' %}" class="list-group-item list-group-item-action d-flex align-items-center px-4 py-3 border-0 border-bottom">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-info bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-chart-bar text-info"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">View Analytics</h6>
+                                <small class="text-secondary">Get insights into student performance</small>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        <a href="{% url 'instructor:forums' %}" class="list-group-item list-group-item-action d-flex align-items-center px-4 py-3 border-0 border-bottom">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-success bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-comments text-success"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">Manage Forums</h6>
+                                <small class="text-secondary">Moderate discussions in your courses</small>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        {% if courses %}
+                        <a href="{% url 'instructor:students' course_slug=courses.first.slug %}" class="list-group-item list-group-item-action d-flex align-items-center px-4 py-3 border-0">
+                            <div class="me-3">
+                                <div class="rounded-circle bg-secondary bg-opacity-10 p-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user-graduate text-secondary"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-semibold">Manage Students</h6>
+                                <small class="text-muted">View and manage your students</small>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="fas fa-chevron-right text-muted"></i>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize charts and other JS functionality here
+    document.addEventListener('DOMContentLoaded', function() {
+        // You can add Chart.js initialization code here if needed
+    });
+</script>
+{% endblock %}

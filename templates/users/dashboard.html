@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(90deg, rgba(25, 25, 65, 0.8), rgba(40, 40, 80, 0.8)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80');
+        background-size: cover;
+        background-position: center;
+        padding: 3rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI5NjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHg9IjAiIHk9IjAiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDQpIiBzdHJva2Utd2lkdGg9IjEiIGQ9Ik0wIDQwTDQwIDBNMCAwTDQwIDQwIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+');
+        opacity: 0.4;
+        z-index: 0;
+    }
+
+    .stat-card {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(13, 232, 236, 0.15);
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 5px;
+        height: 100%;
+    }
+
+    .stat-card.primary::after {
+        background: linear-gradient(to bottom, var(--primary-color), transparent);
+    }
+
+    .stat-card.secondary::after {
+        background: linear-gradient(to bottom, var(--secondary-color), transparent);
+    }
+
+    .stat-card.tertiary::after {
+        background: linear-gradient(to bottom, var(--tertiary-color), transparent);
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .course-progress-container {
+        height: 0.5rem;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 1rem;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    
+    .course-progress-bar {
+        height: 100%;
+        border-radius: 1rem;
+    }
+    
+    .course-progress-bar.beginner {
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-color-light));
+    }
+    
+    .course-progress-bar.intermediate {
+        background: linear-gradient(90deg, var(--secondary-color), var(--secondary-color-light));
+    }
+    
+    .course-progress-bar.advanced {
+        background: linear-gradient(90deg, var(--tertiary-color), var(--tertiary-color-light));
+    }
+
+    .dashboard-course-card {
+        background: rgba(25, 25, 65, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .dashboard-course-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 0 15px rgba(13, 232, 236, 0.1);
+    }
+    
+    .card-img-overlay {
+        background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+    }
+    
+    .instructor-role-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 2;
+        background: rgba(13, 232, 236, 0.2);
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--secondary-color);
+        color: var(--secondary-color);
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header Section -->
+<section class="dashboard-header">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-5 fw-bold text-white mb-0">Welcome, {{ request.user.first_name|default:request.user.username }}</h1>
+                <p class="lead text-white-50 mb-0">{{ page_title }}</p>
+            </div>
+            
+            {% if user.profile.is_instructor %}
+            <div class="col-lg-6 text-lg-end mt-4 mt-lg-0">
+                <a href="{% url 'courses:create' %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-plus-circle me-2"></i> Create New Course
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Dashboard Content -->
+<section class="py-5 dashboard-section">
+    <div class="container">
+        <!-- Stats Row -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="stat-card primary" data-aos="fade-up">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-book fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">{{ enrollments.count }}</div>
+                            <div class="stat-label text-white-50">Enrolled Courses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="stat-card secondary" data-aos="fade-up" data-aos-delay="100">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-tasks fa-2x text-secondary"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">{{ in_progress_courses }}</div>
+                            <div class="stat-label text-white-50">In Progress</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="stat-card tertiary" data-aos="fade-up" data-aos-delay="200">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon me-3">
+                            <i class="fas fa-certificate fa-2x text-tertiary"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">{{ completed_courses }}</div>
+                            <div class="stat-label text-white-50">Completed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+          <!-- Dashboard Navigation Tabs -->
+        <div class="mb-4">
+            <ul class="nav nav-tabs border-0" id="dashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab" aria-controls="courses" aria-selected="true">
+                        <i class="fas fa-book me-2"></i> My Courses
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="quizzes-tab" data-bs-toggle="tab" data-bs-target="#quizzes" type="button" role="tab" aria-controls="quizzes" aria-selected="false">
+                        <i class="fas fa-question-circle me-2"></i> Quizzes
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments" type="button" role="tab" aria-controls="assignments" aria-selected="false">
+                        <i class="fas fa-file-alt me-2"></i> Assignments
+                    </button>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Tab Content -->
+        <div class="tab-content" id="dashboardTabsContent">
+            <!-- Courses Section -->
+            <div class="tab-pane fade show active" id="courses" role="tabpanel" aria-labelledby="courses-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h3">Your Courses</h2>
+                    <a href="{% url 'courses:list' %}" class="btn btn-outline-secondary btn-sm">
+                        View All Courses
+                    </a>
+                </div>
+            
+            {% if enrollments %}
+                <div class="row g-4">
+                    {% for enrollment in enrollments %}
+                        <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|divisibleby:3|yesno:'200,100,0' }}">
+                            <div class="dashboard-course-card">
+                                <div class="position-relative">
+                                    {% if enrollment.course.image %}
+                                        <img src="{{ enrollment.course.image.url }}" class="card-img-top rounded-top" alt="{{ enrollment.course.title }}">
+                                    {% else %}
+                                        <img src="{% static 'images/course-placeholder.jpg' %}" class="card-img-top rounded-top" alt="{{ enrollment.course.title }}">
+                                    {% endif %}
+                                    <div class="card-img-overlay d-flex flex-column justify-content-end">
+                                        <h5 class="card-title text-white">{{ enrollment.course.title }}</h5>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-{{ enrollment.course.get_level_badge_class }}">{{ enrollment.course.get_level_display }}</span>
+                                            {% if enrollment.completed %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% else %}
+                                                <span class="badge bg-info">In Progress</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 small">
+                                        <div><i class="fas fa-calendar-alt me-1 text-secondary"></i> {{ enrollment.date_enrolled|date:"M d, Y" }}</div>
+                                        <div><i class="fas fa-book-open me-1 text-secondary"></i> {{ enrollment.course.lesson_count }} Lessons</div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Progress</span>
+                                        <span>{{ enrollment.progress }}%</span>
+                                    </div>
+                                    <div class="course-progress-container">
+                                        <div class="course-progress-bar {{ enrollment.course.get_level_class }}" style="width: {{ enrollment.progress }}%;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent border-top border-dark d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center small">
+                                        <img src="{{ enrollment.course.instructor.profile.avatar.url|default:'https://via.placeholder.com/40' }}" class="rounded-circle me-2" width="24" height="24" alt="{{ enrollment.course.instructor.username }}">
+                                        <span>{{ enrollment.course.instructor.get_full_name|default:enrollment.course.instructor.username }}</span>
+                                    </div>
+                                    <a href="{% url 'courses:detail' enrollment.course.slug %}" class="btn btn-sm btn-outline-secondary">Continue <i class="fas fa-chevron-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5" data-aos="fade-up">
+                    <img src="{% static 'images/empty-courses.svg' %}" alt="No courses" class="mb-3" style="max-width: 200px; opacity: 0.5;">
+                    <h3>No courses yet</h3>
+                    <p class="text-white-50 mb-4">You haven't enrolled in any courses yet</p>
+                    <a href="{% url 'courses:list' %}" class="btn btn-secondary btn-lg">Explore Courses</a>
+                </div>            {% endif %}
+            </div>
+            
+            <!-- Quizzes Section -->
+            <div class="tab-pane fade" id="quizzes" role="tabpanel" aria-labelledby="quizzes-tab">                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h3">Your Quizzes</h2>
+                    {% if user.profile.is_instructor %}
+                    <a href="{% url 'quizzes:select_course' %}" class="btn btn-outline-tertiary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Create Quiz
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if quizzes %}
+                <div class="row g-4">
+                    {% for quiz in quizzes %}
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|divisibleby:3|yesno:'200,100,0' }}">
+                        <div class="dashboard-course-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="card-title">{{ quiz.title }}</h5>
+                                    {% if user.profile.is_instructor %}
+                                    <span class="badge bg-tertiary">Created by you</span>
+                                    {% else %}
+                                        {% if quiz.attempt %}
+                                            {% if quiz.attempt.passed %}
+                                            <span class="badge bg-success">Passed</span>
+                                            {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                            {% endif %}
+                                        {% else %}
+                                        <span class="badge bg-warning">Not Attempted</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                
+                                <p class="text-white-50 mb-4">{{ quiz.description|truncatechars:100 }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center small mb-3">
+                                    <div><i class="fas fa-list-ol me-1 text-tertiary"></i> {{ quiz.question_count }} Questions</div>
+                                    <div><i class="fas fa-clock me-1 text-tertiary"></i> {{ quiz.time_limit }} mins</div>
+                                </div>
+                                
+                                {% if not user.profile.is_instructor %}
+                                    {% if quiz.attempt %}
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Score</span>
+                                        <span>{{ quiz.attempt.score }}/{{ quiz.total_points }}</span>
+                                    </div>
+                                    <div class="course-progress-container mb-3">
+                                        <div class="course-progress-bar tertiary" style="width: {{ quiz.attempt.score_percentage }}%;"></div>
+                                    </div>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-book me-1"></i> {{ quiz.course.title|truncatechars:20 }}
+                                    </small>
+                                    
+                                    {% if user.profile.is_instructor %}
+                                    <a href="{% url 'quizzes:edit' quiz.id %}" class="btn btn-sm btn-outline-tertiary">
+                                        <i class="fas fa-edit me-1"></i> Edit
+                                    </a>
+                                    {% else %}
+                                        {% if quiz.attempt %}
+                                        <a href="{% url 'quizzes:results' quiz.id %}" class="btn btn-sm btn-outline-tertiary">
+                                            <i class="fas fa-chart-bar me-1"></i> View Results
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'quizzes:take' quiz.id %}" class="btn btn-sm btn-tertiary">
+                                            <i class="fas fa-play-circle me-1"></i> Take Quiz
+                                        </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5" data-aos="fade-up">
+                    <div class="mb-3" style="font-size: 3rem; opacity: 0.4;">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3>No quizzes available</h3>
+                    {% if user.profile.is_instructor %}                    <p class="text-white-50 mb-4">You haven't created any quizzes yet</p>
+                    <a href="{% url 'quizzes:select_course' %}" class="btn btn-tertiary btn-lg">
+                        <i class="fas fa-plus me-2"></i> Create a Quiz
+                    </a>
+                    {% else %}
+                    <p class="text-white-50 mb-4">You don't have any quizzes assigned to your courses</p>
+                    <a href="{% url 'courses:list' %}" class="btn btn-tertiary btn-lg">Explore Courses</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Assignments Section -->
+            <div class="tab-pane fade" id="assignments" role="tabpanel" aria-labelledby="assignments-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="h3">Your Assignments</h2>
+                    {% if user.profile.is_instructor %}
+                    <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-plus me-1"></i> Create Assignment
+                    </a>
+                    {% endif %}
+                </div>
+                
+                {% if assignments %}
+                <div class="row g-4">
+                    {% for assignment in assignments %}
+                    <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter|divisibleby:3|yesno:'200,100,0' }}">
+                        <div class="dashboard-course-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <h5 class="card-title">{{ assignment.title }}</h5>
+                                    {% if assignment.status == 'submitted' %}
+                                    <span class="badge bg-info">Submitted</span>
+                                    {% elif assignment.status == 'graded' %}
+                                    <span class="badge bg-success">Graded</span>
+                                    {% elif assignment.status == 'overdue' %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                    {% elif assignment.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <p class="text-white-50 mb-3">{{ assignment.description|truncatechars:100 }}</p>
+                                
+                                <div class="d-flex justify-content-between small mb-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar-alt me-1 text-secondary"></i>
+                                        <span>Due: {{ assignment.due_date|date:"M d, Y" }}</span>
+                                    </div>
+                                    
+                                    {% if assignment.status == 'graded' %}
+                                    <div>
+                                        <span class="badge bg-light text-dark">
+                                            Grade: {{ assignment.grade }}/{{ assignment.total_points }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-white-50">
+                                        <i class="fas fa-book me-1"></i> {{ assignment.course.title|truncatechars:20 }}
+                                    </small>
+                                    
+                                    {% if user.profile.is_instructor %}
+                                    <a href="#" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit me-1"></i> View Submissions
+                                    </a>
+                                    {% else %}
+                                        {% if assignment.status == 'pending' %}
+                                        <a href="#" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-upload me-1"></i> Submit
+                                        </a>
+                                        {% elif assignment.status == 'submitted' %}
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-edit me-1"></i> Edit Submission
+                                        </a>
+                                        {% elif assignment.status == 'graded' %}
+                                        <a href="#" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye me-1"></i> View Feedback
+                                        </a>
+                                        {% elif assignment.status == 'overdue' %}
+                                        <span class="text-danger">
+                                            <i class="fas fa-exclamation-circle me-1"></i> Deadline Passed
+                                        </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5" data-aos="fade-up">
+                    <div class="mb-3" style="font-size: 3rem; opacity: 0.4;">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>No assignments available</h3>
+                    {% if user.profile.is_instructor %}
+                    <p class="text-white-50 mb-4">You haven't created any assignments yet</p>
+                    <a href="#" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-plus me-2"></i> Create an Assignment
+                    </a>
+                    {% else %}
+                    <p class="text-white-50 mb-4">You don't have any assignments due</p>
+                    <a href="{% url 'courses:list' %}" class="btn btn-secondary btn-lg">Explore Courses</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Upcoming/Recent Activity Section -->
+        <div class="mt-5">
+            <h2 class="h3 mb-4">Recent Activity</h2>
+            <div class="card dashboard-course-card">
+                <div class="list-group list-group-flush">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                            <div class="list-group-item bg-transparent border-bottom border-dark">
+                                <div class="d-flex align-items-center">
+                                    <div class="activity-icon me-3">
+                                        {% if activity.type == 'quiz' %}
+                                            <div class="rounded-circle bg-tertiary-subtle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-question-circle text-tertiary"></i>
+                                            </div>
+                                        {% elif activity.type == 'lesson' %}
+                                            <div class="rounded-circle bg-primary-subtle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-book-open text-primary"></i>
+                                            </div>
+                                        {% elif activity.type == 'forum' %}
+                                            <div class="rounded-circle bg-secondary-subtle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-comments text-secondary"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="ms-2">
+                                        <h6 class="mb-0">{{ activity.title }}</h6>
+                                        <p class="small text-white-50 mb-0">{{ activity.description }}</p>
+                                    </div>
+                                    
+                                    <div class="ms-auto small text-white-50">
+                                        {{ activity.date|timesince }} ago
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item bg-transparent">
+                            <p class="text-center mb-0 py-3 text-white-50">No recent activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize dashboard stats animations
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate progress bars
+        const progressBars = document.querySelectorAll('.course-progress-bar');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = 'width 1s ease-out';
+                bar.style.width = width;
+            }, 300);
+        });
+    });
+</script>
+{% endblock %}

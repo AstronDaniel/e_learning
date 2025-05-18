@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Register - Academic Learning Platform{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Registration Section with Enhanced Neon Effect -->
+<section class="auth-section">
+    <!-- Particle animation -->
+    <div class="particles-container">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    
+    <!-- Background elements -->
+    <div class="position-absolute top-0 start-0 end-0 bottom-0 overflow-hidden" style="z-index: 0;">
+        <div class="position-absolute" style="width: 350px; height: 350px; border-radius: 50%; background: rgba(110, 43, 243, 0.1); filter: blur(100px); top: -50px; right: 5%;"></div>
+        <div class="position-absolute" style="width: 300px; height: 300px; border-radius: 50%; background: rgba(13, 232, 236, 0.1); filter: blur(80px); bottom: -30px; left: 10%;"></div>
+        <div class="position-absolute" style="width: 200px; height: 200px; border-radius: 50%; background: rgba(255, 0, 153, 0.08); filter: blur(60px); bottom: 40%; right: 15%;"></div>
+    </div>
+    
+    <div class="container position-relative" style="z-index: 1;">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="auth-card card p-0" data-aos="fade-up" data-aos-duration="1000">
+                    <div class="glowing-border"></div>
+                    
+                    <div class="row g-0">
+                        <!-- Left side registration form -->
+                        <div class="col-md-7 p-4 p-lg-5">
+                            <div class="text-center mb-4">
+                                <h1 class="neon-text h3 mb-2">Create Academic Account</h1>
+                                <p class="text-secondary">Join our university learning community</p>
+                            </div>
+                            <form method="POST" novalidate>
+                                {% csrf_token %}
+                                
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger alert-dismissible fade show">
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endif %}
+                                <style>
+                                 
+                                                                        
+                                    .form-floating-label .form-control {
+                                    
+                                        width: 70%;
+                                    }
+                                 </style>
+                                <div class="row d-flex flex-column align-items-center">
+                                    <div class="">
+                                        <div class="mb-4 form-floating-label">
+                                            <label for="{{ form.username.id_for_label }}" class="form-label text-white-50">Username</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                                <input type="text" name="{{ form.username.html_name }}" id="{{ form.username.id_for_label }}" 
+                                                       class="form-control" placeholder="Enter your username" 
+                                                       {% if form.username.value %}value="{{ form.username.value }}"{% endif %}>
+                                            </div>
+                                            {% if form.username.errors %}
+                                                <div class="text-danger mt-1 small">
+                                                    {% for error in form.username.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <div class="form-text small">University ID or preferred username</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="">
+                                        <div class="mb-4 form-floating-label">
+                                            <label for="{{ form.email.id_for_label }}" class="form-label text-white-50">Email</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                                <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" 
+                                                       class="form-control" placeholder="Enter your email address" 
+                                                       {% if form.email.value %}value="{{ form.email.value }}"{% endif %}>
+                                            </div>
+                                            {% if form.email.errors %}
+                                                <div class="text-danger mt-1 small">
+                                                    {% for error in form.email.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <div class="form-text small">Academic email preferred</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row d-flex flex-column justify-content-center">
+                                    <div class="">
+                                        <div class="mb-4 form-floating-label">
+                                            <label for="{{ form.password1.id_for_label }}" class="form-label text-white-50">Password</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                                <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}" 
+                                                       class="form-control" placeholder="Create a password">
+                                                <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            {% if form.password1.errors %}
+                                                <div class="text-danger mt-1 small">
+                                                    {% for error in form.password1.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="">
+                                        <div class="mb-4 form-floating-label">
+                                            <label for="{{ form.password2.id_for_label }}" class="form-label text-white-50">Confirm Password</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-lock-open"></i></span>
+                                                <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}" 
+                                                       class="form-control" placeholder="Confirm your password">
+                                                <button class="btn btn-outline-secondary toggle-password" type="button">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </div>
+                                            {% if form.password2.errors %}
+                                                <div class="text-danger mt-1 small">
+                                                    {% for error in form.password2.errors %}
+                                                        {{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>                                    </div>
+                                </div>
+                                
+                                <!-- Role Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label text-white-50">Select your role</label>
+                                    <div class="d-flex gap-4 role-selection">
+                                        <div class="role-option p-3 rounded-3 position-relative {% if form.role.value == 'False' %}active{% endif %}" style="flex: 1; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255,255,255,0.03);">
+                                            <input type="radio" name="role" value="False" id="role_student" class="position-absolute opacity-0" {% if not form.role.value or form.role.value == 'False' %}checked{% endif %}>
+                                            <div class="text-center">
+                                                <div class="role-icon mb-3">
+                                                    <i class="fas fa-user-graduate fa-2x text-secondary"></i>
+                                                </div>
+                                                <h6 class="mb-1">Student</h6>
+                                                <p class="small text-white-50 mb-0">Access and take courses</p>
+                                            </div>
+                                            <div class="role-check position-absolute top-0 end-0 p-2 opacity-0">
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="role-option p-3 rounded-3 position-relative {% if form.role.value == 'True' %}active{% endif %}" style="flex: 1; border: 1px solid var(--border-color); cursor: pointer; background: rgba(255,255,255,0.03);">
+                                            <input type="radio" name="role" value="True" id="role_instructor" class="position-absolute opacity-0" {% if form.role.value == 'True' %}checked{% endif %}>
+                                            <div class="text-center">
+                                                <div class="role-icon mb-3">
+                                                    <i class="fas fa-chalkboard-teacher fa-2x text-secondary"></i>
+                                                </div>
+                                                <h6 class="mb-1">Instructor</h6>
+                                                <p class="small text-white-50 mb-0">Create and manage courses</p>
+                                            </div>
+                                            <div class="role-check position-absolute top-0 end-0 p-2 opacity-0">
+                                                <i class="fas fa-check-circle text-success"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if form.role.errors %}
+                                        <div class="text-danger mt-1 small">
+                                            {% for error in form.role.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                    <label class="form-check-label text-white-50" for="termsCheck">
+                                        I agree to the <a href="#" class="neon-link">Terms of Service</a> and <a href="#" class="neon-link">Privacy Policy</a>
+                                    </label>
+                                </div>
+                                
+                                <div class="d-grid gap-2 mb-4">
+                                    <button type="submit" class="btn btn-lg btn-secondary btn-glow">
+                                        <i class="fas fa-user-plus me-2"></i> Create Account
+                                    </button>
+                                </div>
+                                
+                                <div class="auth-divider">
+                                    <span>or register with</span>
+                                </div>
+                                
+                                <div class="social-login mb-4">
+                                    <a href="#" class="social-btn google">
+                                        <i class="fab fa-google"></i>
+                                    </a>
+                                    <a href="#" class="social-btn github">
+                                        <i class="fab fa-github"></i>
+                                    </a>
+                                    <a href="#" class="social-btn linkedin">
+                                        <i class="fab fa-linkedin-in"></i>
+                                    </a>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <p class="mb-0 text-white-50">
+                                        Already have an account? <a href="{% url 'users:login' %}" class="neon-link">Login here</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Right side illustration -->
+                        <div class="col-md-5 d-none d-md-block p-4 text-center auth-sidebar-image" 
+                             style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1074&auto=format&fit=crop');">
+                            <div class="auth-sidebar-overlay"></div>
+                            <div class="d-flex flex-column h-100 justify-content-center align-items-center position-relative">
+                                <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1170&auto=format&fit=crop" class="auth-illustration mb-4 rounded-circle auth-avatar" width="150" height="150" alt="Academic Community">
+                                
+                                <h3 class="neon-text">Join Our <span class="neon-text-pink">Academic</span> Community</h3>
+                                <p class="text-white mb-4">Get access to courses, assignments, and collaborate with fellow students</p>
+                                
+                                <div class="d-flex flex-wrap justify-content-center gap-3 mt-2">
+                                    <div class="d-flex align-items-center p-2 px-3 rounded auth-feature-pill">
+                                        <i class="fas fa-graduation-cap text-white me-2"></i>
+                                        <span class="text-white">Academic Excellence</span>
+                                    </div>
+                                    <div class="d-flex align-items-center p-2 px-3 rounded auth-feature-pill">
+                                        <i class="fas fa-users text-white me-2"></i>
+                                        <span class="text-white">Student Collaboration</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const passwordInput = this.parentElement.querySelector('input');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+    });
+    
+    // Role selection handler
+    document.addEventListener('DOMContentLoaded', function() {
+        const roleOptions = document.querySelectorAll('.role-option');
+        
+        // Apply initial active state (important for form validation errors when page reloads)
+        roleOptions.forEach(option => {
+            const radio = option.querySelector('input[type="radio"]');
+            if(radio.checked) {
+                activateRoleOption(option);
+            }
+        });
+        
+        // Add click event to each role option
+        roleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // First, remove active state from all options
+                roleOptions.forEach(opt => {
+                    opt.classList.remove('active');
+                    opt.style.borderColor = 'var(--border-color)';
+                    opt.style.boxShadow = 'none';
+                    opt.querySelector('.role-check').style.opacity = '0';
+                    opt.style.transform = 'translateY(0)';
+                });
+                
+                // Then activate the clicked option
+                activateRoleOption(this);
+                
+                // Check the hidden radio button
+                const radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+            });
+        });
+        
+        function activateRoleOption(option) {
+            // Add active class
+            option.classList.add('active');
+            
+            // Visual effects
+            option.style.borderColor = 'var(--secondary-color)';
+            option.style.boxShadow = '0 0 15px rgba(13, 232, 236, 0.3)';
+            option.style.transform = 'translateY(-5px)';
+            
+            // Show check mark
+            option.querySelector('.role-check').style.opacity = '1';
+            
+            // Change icon color
+            const icon = option.querySelector('.role-icon i');
+            icon.classList.remove('text-secondary');
+            if(option.querySelector('input').value === 'True') {
+                icon.classList.add('text-tertiary'); // Instructor color
+            } else {
+                icon.classList.add('text-secondary-emphasis'); // Student color
+            }
+            
+            // Apply a highlight glow effect
+            const roleTitle = option.querySelector('h6');
+            roleTitle.classList.add('neon-text');
+        }
+    });
+</script>
+{% endblock %}
