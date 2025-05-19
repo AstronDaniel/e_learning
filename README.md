@@ -221,5 +221,5 @@ Project Link: https://github.com/AstronDaniel/e_learning.git)]
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by Your Name</sub>
+  <sub>Built with ❤️ by Sempala Daniel </sub>
 </div>
