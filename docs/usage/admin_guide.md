@@ -81,3 +81,45 @@ This guide provides instructions for administrators of the E-Learning Platform.
 - Schedule maintenance windows
 - Notify users of planned downtime
 - Update software components
+
+## Customizing the Admin Page
+
+### Custom Templates
+1. Create a directory named `admin` inside the `templates` directory.
+2. Copy the default Django admin templates from the Django installation directory to the `templates/admin` directory.
+3. Modify the copied templates to match your desired design.
+4. Ensure that the `TEMPLATES` setting in the `e_learning/settings.py` file includes the `templates` directory.
+
+### Custom CSS and JavaScript
+1. Create custom CSS and JavaScript files in the `static` directory.
+2. Link the custom CSS and JavaScript files in the custom admin templates.
+3. Use the existing `static/css/main.css` and `static/js/animations.js` files as a reference.
+
+### Example Customization
+1. Create `templates/admin/base_site.html` and `templates/admin/base.html` files.
+2. Add the following content to `templates/admin/base_site.html`:
+    ```html
+    {% extends "admin/base_site.html" %}
+
+    {% block extrastyle %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/admin.css' %}">
+    {% endblock %}
+
+    {% block extrahead %}
+        <script type="text/javascript" src="{% static 'js/admin.js' %}"></script>
+    {% endblock %}
+    ```
+3. Add the following content to `templates/admin/base.html`:
+    ```html
+    {% extends "admin/base.html" %}
+
+    {% block extrastyle %}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/admin.css' %}">
+    {% endblock %}
+
+    {% block extrahead %}
+        <script type="text/javascript" src="{% static 'js/admin.js' %}"></script>
+    {% endblock %}
+    ```
+4. Create `static/css/admin.css` and `static/js/admin.js` files.
+5. Add custom styles and JavaScript to the created files to enhance the admin page design.
